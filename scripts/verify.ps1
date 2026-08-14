@@ -50,7 +50,10 @@ Assert-Link (Join-Path $agentsSkills 'self-improve') (Join-Path $RepoRoot 'codex
 & python -c "import pathlib,sys,tomllib; tomllib.loads(pathlib.Path(sys.argv[1]).read_text(encoding='utf-8'))" (Join-Path $RepoRoot 'codex\agents\meta-doc-critic.toml')
 if ($LASTEXITCODE -ne 0) { throw 'Codex critic agent TOML 검증 실패' }
 
-$skillFiles = Get-ChildItem -LiteralPath $RepoRoot -Recurse -Filter 'SKILL.md'
+$skillFiles = @()
+foreach ($skillRoot in @('shared\skills', 'claude\skills', 'codex\skills')) {
+    $skillFiles += Get-ChildItem -LiteralPath (Join-Path $RepoRoot $skillRoot) -Recurse -Filter 'SKILL.md'
+}
 foreach ($file in $skillFiles) {
     $text = Get-Content -Raw -LiteralPath $file.FullName
     if ($text -notmatch '(?s)^---\s*\r?\nname:\s*[^\r\n]+\r?\ndescription:\s*[^\r\n]+') {
