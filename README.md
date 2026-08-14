@@ -33,8 +33,6 @@ Bash에서 실행한다.
 
 Linux에서는 파일과 디렉터리를 symbolic link로 연결한다.
 
-두 installer 모두 교체할 기존 대상을 저장소의 Git 제외 경로인 `.migration-snapshots/`로 이동한다. 제품 홈의 `backups` 등 제품 소유 경로는 사용하지 않는다.
-
 ## 변경 흐름
 
 플랫폼에서 발견한 문제는 먼저 해당 플랫폼의 `self-improve`로 고친다. 다른 플랫폼에도 같은 실패 원인이 존재할 때만 `port-harness-change`로 의미를 옮긴다. 양쪽 파일을 기계적으로 같게 만들지 않는다.
