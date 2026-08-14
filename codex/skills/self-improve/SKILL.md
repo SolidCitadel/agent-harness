@@ -22,4 +22,4 @@ description: 사용자가 Codex의 작업 방식·지침 준수를 지적하거�
 2. 승인된 Codex 또는 shared 문서를 편집한다.
 3. `meta_doc_critic` agent에는 대상 경로·원 사건·직접 연결된 workflow만 전달한다. 작성자의 결론이나 기대 답은 넘기지 않는다.
 4. critic 지적을 반영한 최종 상태를 같은 agent로 다시 검수한다. agent를 사용할 수 없는 환경이면 분리된 검수 패스를 수행하고 그 한계를 밝힌다.
-5. 원인이 Claude에도 존재할 구조적 근거가 있을 때만 `port-harness-change`를 사용한다. 모델 성향이나 Codex 기능에 묶인 문제는 Codex에 남긴다.
+5. 원인이 Claude Code에도 존재할 구조적 근거가 있을 때만 `port-harness-change`를 사용한다. 모델 성향이나 Codex 기능에 묶인 문제는 Codex에 남긴다.

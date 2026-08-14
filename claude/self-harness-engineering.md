@@ -2,7 +2,7 @@
 
 에이전트가 자기 운영을 다시 엔지니어링하는 행위와 그 기계의 지도다. self-improve가 개선 대상이 이 기계의 구성물이라 판단하면 이 문서를 읽어 전체 워크플로우를 조망하고 개선점을 짚는다. 이 층위는 "skill을 만드는 skill"처럼 한 단계 위라 변경에 최고 신중도를 요구한다.
 
-관리 정본은 `Documents/Workspace/agent-harness`이고 `~/.claude`의 사용자 작성 항목은 그중 Claude 어댑터와 shared skill을 가리킨다. `shared/principles.md`는 플랫폼 중립 의미의 대조 기준이며 Claude가 런타임에 직접 읽는 지침은 `CLAUDE.md`다.
+관리 정본은 `Documents/Workspace/agent-harness`이고 `~/.claude`의 사용자 작성 항목은 그중 Claude Code 어댑터와 shared skill을 가리킨다. `shared/principles.md`는 플랫폼 중립 의미의 대조 기준이며 Claude Code가 런타임에 직접 읽는 지침은 `CLAUDE.md`다.
 
 ## 대상
 

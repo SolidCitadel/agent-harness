@@ -1,9 +1,9 @@
 # agent-harness
 
-Claude와 Codex의 개인 운영 원칙과 재사용 워크플로를 관리한다.
+Claude Code와 Codex의 개인 운영 원칙과 재사용 워크플로를 관리한다.
 
 - `shared/`: 플랫폼과 무관한 원칙과 스킬
-- `claude/`: Claude의 지침·rule·agent·hook·플랫폼별 skill
+- `claude/`: Claude Code의 지침·rule·agent·hook·플랫폼별 skill
 - `codex/`: Codex의 지침·critic agent·플랫폼별 skill
 - `scripts/`: 제품의 고정 discovery 경로에 선택적 링크를 설치하고 검증하는 스크립트
 

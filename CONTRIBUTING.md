@@ -3,7 +3,7 @@
 ## 변경 소속
 
 - 플랫폼과 무관한 원칙과 workflow만 `shared/`에 둔다.
-- Claude와 Codex의 discovery 경로, agent 형식, hook, 권한 체계에 묶인 구현은 각 플랫폼 디렉터리에 둔다.
+- Claude Code와 Codex의 discovery 경로, agent 형식, hook, 권한 체계에 묶인 구현은 각 플랫폼 디렉터리에 둔다.
 - 한 플랫폼에서 확인한 변경은 반대편에 같은 실패 원인이 존재할 때만 포팅한다.
 
 ## 검증

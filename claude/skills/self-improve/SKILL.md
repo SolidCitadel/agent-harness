@@ -1,6 +1,6 @@
 ---
 name: self-improve
-description: 사용자가 Claude의 작업 방식·규칙을 지적·교정하거나, 규칙 준수가 목적을 해칠 때 원인을 진단하고 agent-harness의 Claude 메타 문서를 개선한다.
+description: 사용자가 Claude Code의 작업 방식·규칙을 지적·교정하거나, 규칙 준수가 목적을 해칠 때 원인을 진단하고 agent-harness의 Claude Code 메타 문서를 개선한다.
 ---
 
 # 자기 개선
@@ -24,4 +24,4 @@ description: 사용자가 Claude의 작업 방식·규칙을 지적·교정하�
 2. 승인된 문서를 편집한다.
 3. Meta-doc critic에는 대상 경로·원 사건·직접 연결된 workflow만 전달해 전체를 검수시킨다.
 4. 지적을 반영한 최종 상태를 다시 검수하고 완결 마킹한다.
-5. 원인이 Codex에도 존재할 구조적 근거가 있을 때만 `port-harness-change`를 사용한다. 모델 성향이나 Claude 기능에 묶인 문제는 Claude에 남긴다.
+5. 원인이 Codex에도 존재할 구조적 근거가 있을 때만 `port-harness-change`를 사용한다. 모델 성향이나 Claude Code 기능에 묶인 문제는 Claude Code에 남긴다.
