@@ -75,9 +75,10 @@ function Install-Link {
     Write-Host "연결: $Destination -> $sourceFull"
 }
 
-$claudeBackup = Join-Path $claudeHome "backups\agent-harness-migration-$stamp"
-$codexBackup = Join-Path $codexHome "backups\agent-harness-migration-$stamp"
-$agentsBackup = Join-Path $UserHome ".agents\backups\agent-harness-migration-$stamp"
+$snapshotRoot = Join-Path $RepoRoot ".migration-snapshots\$stamp"
+$claudeBackup = Join-Path $snapshotRoot 'claude'
+$codexBackup = Join-Path $snapshotRoot 'codex'
+$agentsBackup = Join-Path $snapshotRoot 'agents'
 
 $legacyGit = Join-Path $claudeHome '.git'
 if (Test-Path -LiteralPath $legacyGit) {
@@ -95,7 +96,7 @@ $fileLinks = @(
     @{ S = 'claude\CLAUDE.md'; D = (Join-Path $claudeHome 'CLAUDE.md'); B = $claudeBackup; R = 'CLAUDE.md' },
     @{ S = 'claude\self-harness-engineering.md'; D = (Join-Path $claudeHome 'self-harness-engineering.md'); B = $claudeBackup; R = 'self-harness-engineering.md' },
     @{ S = 'codex\AGENTS.md'; D = (Join-Path $codexHome 'AGENTS.md'); B = $codexBackup; R = 'AGENTS.md' },
-    @{ S = 'codex\hooks.json'; D = (Join-Path $codexHome 'hooks.json'); B = $codexBackup; R = 'hooks.json' }
+    @{ S = 'codex\agents\meta-doc-critic.toml'; D = (Join-Path $codexHome 'agents\meta-doc-critic.toml'); B = $codexBackup; R = 'agents\meta-doc-critic.toml' }
 )
 
 foreach ($link in $fileLinks) {
@@ -105,8 +106,7 @@ foreach ($link in $fileLinks) {
 $directoryLinks = @(
     @{ S = 'claude\rules'; D = (Join-Path $claudeHome 'rules'); B = $claudeBackup; R = 'rules' },
     @{ S = 'claude\agents'; D = (Join-Path $claudeHome 'agents'); B = $claudeBackup; R = 'agents' },
-    @{ S = 'claude\hooks'; D = (Join-Path $claudeHome 'hooks'); B = $claudeBackup; R = 'hooks' },
-    @{ S = 'codex\hooks'; D = (Join-Path $codexHome 'harness-hooks'); B = $codexBackup; R = 'harness-hooks' }
+    @{ S = 'claude\hooks'; D = (Join-Path $claudeHome 'hooks'); B = $claudeBackup; R = 'hooks' }
 )
 
 $sharedSkills = @('brain-storming', 'frontend-design', 'grill-me', 'improve-code-base-architecture', 'ubuiquitous-language', 'port-harness-change')
@@ -142,21 +142,4 @@ foreach ($link in $directoryLinks) {
     Install-Link -Source (Join-Path $RepoRoot $link.S) -Destination $link.D -BackupRoot $link.B -BackupRelative $link.R -Kind Directory
 }
 
-$previousState = $env:CODEX_META_VERIFIED_STATE
-try {
-    $statePath = Join-Path $codexHome '.meta-verified.json'
-    if (-not (Test-Path -LiteralPath $statePath)) {
-        $env:CODEX_META_VERIFIED_STATE = $statePath
-        & python (Join-Path $RepoRoot 'codex\hooks\mark-verified.py') (Join-Path $RepoRoot 'shared') (Join-Path $RepoRoot 'codex')
-        if ($LASTEXITCODE -ne 0) { throw 'Codex 검증 기준선 초기화에 실패했습니다.' }
-    }
-} finally {
-    if ($null -eq $previousState) {
-        Remove-Item Env:\CODEX_META_VERIFIED_STATE -ErrorAction SilentlyContinue
-    } else {
-        $env:CODEX_META_VERIFIED_STATE = $previousState
-    }
-}
-
 Write-Host "설치 완료: $RepoRoot"
-Write-Host 'Codex는 새 hook을 실행하기 전에 /hooks에서 정의를 검토하고 신뢰해야 할 수 있습니다.'

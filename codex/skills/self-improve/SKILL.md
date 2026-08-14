@@ -14,13 +14,12 @@ description: 사용자가 Codex의 작업 방식·지침 준수를 지적하거�
 
 ## 개입
 
-다음 실행에도 남으면서 전체 실패 경로의 원인을 직접 바꾸는 가장 작은 개입을 고른다. 전역 기본값은 `AGENTS.md`, 반복 workflow는 skill, 기계적 수명주기 검증은 Codex hook, 셸 권한 정책은 Codex `.rules`에 둔다.
+다음 실행에도 남으면서 전체 실패 경로의 원인을 직접 바꾸는 가장 작은 개입을 고른다. 전역 기본값은 `AGENTS.md`, 반복 workflow는 skill, 독립 검수 역할은 custom agent, 셸 권한 정책은 Codex `.rules`에 둔다. 다른 플랫폼의 보철을 Codex에 복제하지 않는다.
 
 ## 변경과 검증
 
 1. 원인과 최소 수정안을 사용자에게 제안하고 승인받는다.
 2. 승인된 Codex 또는 shared 문서를 편집한다.
-3. 가능하면 작성 맥락과 결론을 넘기지 않은 독립 agent에 대상 경로·원 사건·직접 연결된 workflow만 전달해 검수한다. 독립 agent를 사용할 수 없으면 새로 원문을 읽는 분리된 검수 패스로 같은 기준을 적용하고 그 한계를 밝힌다.
-4. 지적을 반영한 최종 상태를 다시 검수한다.
-5. `python ~/.codex/harness-hooks/mark-verified.py <최종 검수한 경로...>`로 현재 파일 상태를 마킹한다.
-6. 원인이 Claude에도 존재할 구조적 근거가 있을 때만 `port-harness-change`를 사용한다. 모델 성향이나 Codex 기능에 묶인 문제는 Codex에 남긴다.
+3. `meta_doc_critic` agent에는 대상 경로·원 사건·직접 연결된 workflow만 전달한다. 작성자의 결론이나 기대 답은 넘기지 않는다.
+4. critic 지적을 반영한 최종 상태를 같은 agent로 다시 검수한다. agent를 사용할 수 없는 환경이면 분리된 검수 패스를 수행하고 그 한계를 밝힌다.
+5. 원인이 Claude에도 존재할 구조적 근거가 있을 때만 `port-harness-change`를 사용한다. 모델 성향이나 Codex 기능에 묶인 문제는 Codex에 남긴다.

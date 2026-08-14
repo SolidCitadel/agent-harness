@@ -37,8 +37,7 @@ Assert-Link (Join-Path $claudeHome 'rules') (Join-Path $RepoRoot 'claude\rules')
 Assert-Link (Join-Path $claudeHome 'agents') (Join-Path $RepoRoot 'claude\agents')
 Assert-Link (Join-Path $claudeHome 'hooks') (Join-Path $RepoRoot 'claude\hooks')
 Assert-Link (Join-Path $codexHome 'AGENTS.md') (Join-Path $RepoRoot 'codex\AGENTS.md')
-Assert-Link (Join-Path $codexHome 'hooks.json') (Join-Path $RepoRoot 'codex\hooks.json')
-Assert-Link (Join-Path $codexHome 'harness-hooks') (Join-Path $RepoRoot 'codex\hooks')
+Assert-Link (Join-Path $codexHome 'agents\meta-doc-critic.toml') (Join-Path $RepoRoot 'codex\agents\meta-doc-critic.toml')
 
 $skills = @('brain-storming', 'frontend-design', 'grill-me', 'improve-code-base-architecture', 'ubuiquitous-language', 'port-harness-change')
 foreach ($name in $skills) {
@@ -48,13 +47,8 @@ foreach ($name in $skills) {
 Assert-Link (Join-Path $claudeHome 'skills\self-improve') (Join-Path $RepoRoot 'claude\skills\self-improve')
 Assert-Link (Join-Path $agentsSkills 'self-improve') (Join-Path $RepoRoot 'codex\skills\self-improve')
 
-Get-Content -Raw -LiteralPath (Join-Path $RepoRoot 'codex\hooks.json') | ConvertFrom-Json | Out-Null
-
-$pythonFiles = Get-ChildItem -LiteralPath (Join-Path $RepoRoot 'codex\hooks') -Filter '*.py'
-foreach ($file in $pythonFiles) {
-    & python -c "import pathlib,sys; compile(pathlib.Path(sys.argv[1]).read_text(encoding='utf-8'), sys.argv[1], 'exec')" $file.FullName
-    if ($LASTEXITCODE -ne 0) { throw "Python 구문 검증 실패: $($file.FullName)" }
-}
+& python -c "import pathlib,sys,tomllib; tomllib.loads(pathlib.Path(sys.argv[1]).read_text(encoding='utf-8'))" (Join-Path $RepoRoot 'codex\agents\meta-doc-critic.toml')
+if ($LASTEXITCODE -ne 0) { throw 'Codex critic agent TOML 검증 실패' }
 
 $skillFiles = Get-ChildItem -LiteralPath $RepoRoot -Recurse -Filter 'SKILL.md'
 foreach ($file in $skillFiles) {

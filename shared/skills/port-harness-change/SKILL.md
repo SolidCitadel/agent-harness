@@ -10,4 +10,4 @@ description: Claude 또는 Codex의 self-improve에서 확인된 운영 변경�
 3. 모델 성향·도구 이름·hook 입출력·discovery 경로에 종속된 부분과 플랫폼 중립 의미를 분리한다.
 4. 같은 원인이 존재하고 기존 지침이 막지 못할 때만 대상 플랫폼을 수정한다. 원인이 없거나 이미 차단되면 포팅하지 않고 근거를 기록한다.
 5. 문장을 복사하지 말고 대상 플랫폼의 실행 표면에 배치한다. Claude rule과 Codex `.rules`는 같은 개념이 아니며, Codex 사용자 skill은 공식 user discovery 경로를 따른다.
-6. 대상 플랫폼의 `self-improve` 검증 절차로 최종 상태를 검수하고 마킹한다.
+6. 대상 플랫폼의 `self-improve` 검증 절차로 최종 상태를 검수한다.
