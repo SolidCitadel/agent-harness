@@ -24,11 +24,11 @@ Conventional Commits의 변경 유형 대신 영향을 받는 운영 표면을 s
 예:
 
 ```text
-codex: replace verification hooks with critic agent
-claude: tighten meta-document review workflow
-shared: clarify evidence requirements
-install: add Linux symlink support
-repo: document contribution conventions
+codex: clarify critic input contract
+claude: align hook paths with installer
+shared: refine evidence standard
+install: verify supported link targets
+repo: clarify contribution scope
 ```
 
 원 사건, 플랫폼 간 포팅 판단, 호환성 제약이 제목만으로 드러나지 않으면 commit body에 이유를 적는다. 여러 의미를 한 커밋에 묶지 않는다.

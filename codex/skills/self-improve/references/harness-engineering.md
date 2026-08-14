@@ -1,6 +1,6 @@
 # Codex self-harness 지도
 
-자기수정 loop는 `self-improve`가 진단·개입·승인을 맡고, 메타 문서 규율이 집필을 제한하며, read-only `meta_doc_critic`이 작성자와 분리돼 결함을 찾는 구조다. Codex는 지침을 과잉 적용하는 실패가 더 중요하므로 Claude Code의 Stop gate와 검증 마커를 이식하지 않는다.
+자기수정 loop는 `self-improve`가 진단·개입·승인을 맡고, 메타 문서 규율이 집필을 제한하며, read-only `meta_doc_critic`이 작성자와 분리돼 결함을 찾는 구조다.
 
 | 구성물 | 역할 |
 |---|---|
