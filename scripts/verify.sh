@@ -55,6 +55,7 @@ shared_skills=(
   grill-me
   improve-code-base-architecture
   interface-design
+  review-pull-request
   structure-documentation
   ubuiquitous-language
   port-harness-change
