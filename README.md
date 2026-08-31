@@ -2,12 +2,15 @@
 
 Claude Code와 Codex의 개인 운영 원칙과 재사용 워크플로를 관리한다.
 
-- `shared/`: 플랫폼과 무관한 원칙과 스킬
-- `claude/`: Claude Code의 지침·rule·agent·hook·플랫폼별 skill
-- `codex/`: Codex의 지침·critic agent·플랫폼별 skill
+- `shared/skills/`: 직접 관리하는 플랫폼 공통 workflow
+- `shared/vendor/`: 수정하지 않는 외부 원본과 라이선스
+- `claude/`: Claude Code의 지침·rule·agent·hook. 수동 도구는 설치 시 `~/.claude/commands/`로 연결한다.
+- `codex/`: Codex의 지침·critic agent·플랫폼별 skill. 수동 skill은 암시 호출을 끈다.
 - `scripts/`: 제품의 고정 discovery 경로에 선택적 링크를 설치하고 검증하는 스크립트
 
 `~/.claude`와 `~/.codex` 전체를 관리하지 않는다. 인증, 세션, 캐시, 플러그인 및 제품이 쓰는 가변 상태는 각 제품 경로에 남긴다.
+
+Anthropic의 `frontend-design` 원본은 `shared/vendor/`에서 관리한다. Claude에서는 `/frontend-design` command로, Codex에서는 `$frontend-design` 수동 skill로만 호출한다.
 
 ## 설치
 

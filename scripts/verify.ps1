@@ -40,6 +40,13 @@ function Assert-Link {
     }
 }
 
+function Assert-PathAbsent {
+    param([string]$Path)
+    if (Get-Item -Force -LiteralPath $Path -ErrorAction SilentlyContinue) {
+        throw "더 이상 사용하지 않는 경로가 남아 있습니다: $Path"
+    }
+}
+
 $claudeHome = Join-Path $UserHome '.claude'
 $codexHome = Join-Path $UserHome '.codex'
 $agentsSkills = Join-Path $UserHome '.agents\skills'
@@ -48,14 +55,18 @@ Assert-Link (Join-Path $claudeHome 'CLAUDE.md') (Join-Path $RepoRoot 'claude\CLA
 Assert-Link (Join-Path $claudeHome 'rules') (Join-Path $RepoRoot 'claude\rules')
 Assert-Link (Join-Path $claudeHome 'agents') (Join-Path $RepoRoot 'claude\agents')
 Assert-Link (Join-Path $claudeHome 'hooks') (Join-Path $RepoRoot 'claude\hooks')
+Assert-Link (Join-Path $claudeHome 'commands\frontend-design.md') (Join-Path $RepoRoot 'claude\commands\frontend-design.md')
+Assert-Link (Join-Path $claudeHome 'commands\frontend-design.LICENSE.txt') (Join-Path $RepoRoot 'shared\vendor\anthropics\frontend-design\LICENSE.txt')
+Assert-PathAbsent (Join-Path $claudeHome 'skills\frontend-design')
 Assert-Link (Join-Path $codexHome 'AGENTS.md') (Join-Path $RepoRoot 'codex\AGENTS.md')
 Assert-Link (Join-Path $codexHome 'agents\meta-doc-critic.toml') (Join-Path $RepoRoot 'codex\agents\meta-doc-critic.toml')
 
-$skills = @('brain-storming', 'frontend-design', 'grill-me', 'improve-code-base-architecture', 'interface-design', 'review-pull-request', 'structure-documentation', 'ubuiquitous-language', 'port-harness-change')
+$skills = @('brain-storming', 'grill-me', 'improve-code-base-architecture', 'interface-design', 'review-pull-request', 'structure-documentation', 'ubuiquitous-language', 'port-harness-change')
 foreach ($name in $skills) {
     Assert-Link (Join-Path $claudeHome "skills\$name") (Join-Path $RepoRoot "shared\skills\$name")
     Assert-Link (Join-Path $agentsSkills $name) (Join-Path $RepoRoot "shared\skills\$name")
 }
+Assert-Link (Join-Path $agentsSkills 'frontend-design') (Join-Path $RepoRoot 'codex\skills\frontend-design')
 Assert-Link (Join-Path $claudeHome 'skills\self-improve') (Join-Path $RepoRoot 'claude\skills\self-improve')
 Assert-Link (Join-Path $agentsSkills 'self-improve') (Join-Path $RepoRoot 'codex\skills\self-improve')
 
@@ -71,6 +82,53 @@ foreach ($file in $skillFiles) {
     if ($text -notmatch '(?s)^---\s*\r?\nname:\s*[^\r\n]+\r?\ndescription:\s*[^\r\n]+') {
         throw "SKILL.md frontmatter 검증 실패: $($file.FullName)"
     }
+}
+
+$frontendPolicy = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot 'codex\skills\frontend-design\agents\openai.yaml')
+if ($frontendPolicy -notmatch '(?m)^\s*allow_implicit_invocation:\s*false\s*$') {
+    throw '외부 frontend-design은 명시적 호출 전용이어야 합니다.'
+}
+
+$thirdParty = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot 'shared\third-party-skills.json') | ConvertFrom-Json
+$frontendSource = $thirdParty.'frontend-design'
+if (-not $frontendSource -or $frontendSource.implicitInvocation -ne $false) {
+    throw 'frontend-design 외부 출처 또는 호출 정책 메타데이터가 올바르지 않습니다.'
+}
+function Get-NormalizedHash {
+    param([string]$Path, [switch]$RemoveClaudePolicy)
+    $content = [IO.File]::ReadAllText($Path).Replace("`r`n", "`n")
+    if ($RemoveClaudePolicy) {
+        $content = $content.Replace("disable-model-invocation: true`n", '')
+        $content = $content.Replace('license: Complete terms in frontend-design.LICENSE.txt', 'license: Complete terms in LICENSE.txt')
+    }
+    $bytes = [Text.UTF8Encoding]::new($false).GetBytes($content)
+    $sha256 = [Security.Cryptography.SHA256]::Create()
+    try {
+        return ([BitConverter]::ToString($sha256.ComputeHash($bytes))).Replace('-', '')
+    } finally {
+        $sha256.Dispose()
+    }
+}
+
+$vendorSkill = Join-Path $RepoRoot 'shared\vendor\anthropics\frontend-design\SKILL.md'
+$vendorLicense = Join-Path $RepoRoot 'shared\vendor\anthropics\frontend-design\LICENSE.txt'
+$skillHash = Get-NormalizedHash $vendorSkill
+$licenseHash = Get-NormalizedHash $vendorLicense
+$codexSkillHash = Get-NormalizedHash (Join-Path $RepoRoot 'codex\skills\frontend-design\SKILL.md')
+$codexLicenseHash = Get-NormalizedHash (Join-Path $RepoRoot 'codex\skills\frontend-design\LICENSE.txt')
+$claudeCommand = Join-Path $RepoRoot 'claude\commands\frontend-design.md'
+$claudeCommandText = [IO.File]::ReadAllText($claudeCommand).Replace("`r`n", "`n")
+$claudeFrontmatterEnd = $claudeCommandText.IndexOf("`n---`n", 4, [StringComparison]::Ordinal)
+if (-not $claudeCommandText.StartsWith("---`n", [StringComparison]::Ordinal) -or $claudeFrontmatterEnd -lt 0) {
+    throw 'Claude용 frontend-design command frontmatter가 올바르지 않습니다.'
+}
+$claudeFrontmatter = $claudeCommandText.Substring(0, $claudeFrontmatterEnd)
+$claudeSkillHash = Get-NormalizedHash $claudeCommand -RemoveClaudePolicy
+if ($claudeFrontmatter -notmatch '(?m)^disable-model-invocation:\s*true\s*$') {
+    throw 'Claude용 frontend-design command는 명시적 호출 전용이어야 합니다.'
+}
+if ($skillHash -ne $frontendSource.upstreamSkillSha256 -or $licenseHash -ne $frontendSource.licenseSha256 -or $codexSkillHash -ne $skillHash -or $codexLicenseHash -ne $licenseHash -or $claudeSkillHash -ne $skillHash) {
+    throw 'frontend-design 설치본이 기록된 해시와 다릅니다.'
 }
 
 Write-Host "검증 완료: 링크와 메타 파일 $($skillFiles.Count)개가 유효합니다."

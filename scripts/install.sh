@@ -61,6 +61,38 @@ install_link() {
   printf '연결: %s -> %s\n' "$destination" "$source"
 }
 
+remove_obsolete_managed_link() {
+  local path raw_target actual expected matched
+  path="$1"
+  shift
+
+  [[ -e "$path" || -L "$path" ]] || return
+  if [[ ! -L "$path" ]]; then
+    echo "기존 경로가 관리 링크가 아니므로 자동 이동하지 않습니다: $path" >&2
+    exit 1
+  fi
+
+  raw_target="$(readlink -- "$path")"
+  if [[ "$raw_target" == /* ]]; then
+    actual="$(realpath -m -- "$raw_target")"
+  else
+    actual="$(realpath -m -- "$(dirname -- "$path")/$raw_target")"
+  fi
+  matched=false
+  for expected in "$@"; do
+    if [[ "$actual" == "$(realpath -m -- "$expected")" ]]; then
+      matched=true
+    fi
+  done
+  if [[ "$matched" != true ]]; then
+    echo "기존 경로의 링크 대상이 관리 대상과 다릅니다: $path" >&2
+    exit 1
+  fi
+
+  rm -- "$path"
+  printf '이전 관리 링크 제거: %s\n' "$path"
+}
+
 if [[ -e "$claude_home/.git" ]]; then
   legacy_snapshot="$claude_snapshot/legacy-repository"
   mkdir -p -- "$legacy_snapshot"
@@ -73,6 +105,8 @@ fi
 
 install_link "$repo_root/claude/CLAUDE.md" "$claude_home/CLAUDE.md" "$claude_snapshot" 'CLAUDE.md'
 install_link "$repo_root/claude/self-harness-engineering.md" "$claude_home/self-harness-engineering.md" "$claude_snapshot" 'self-harness-engineering.md'
+install_link "$repo_root/claude/commands/frontend-design.md" "$claude_home/commands/frontend-design.md" "$claude_snapshot" 'commands/frontend-design.md'
+install_link "$repo_root/shared/vendor/anthropics/frontend-design/LICENSE.txt" "$claude_home/commands/frontend-design.LICENSE.txt" "$claude_snapshot" 'commands/frontend-design.LICENSE.txt'
 install_link "$repo_root/codex/AGENTS.md" "$codex_home/AGENTS.md" "$codex_snapshot" 'AGENTS.md'
 install_link "$repo_root/codex/agents/meta-doc-critic.toml" "$codex_home/agents/meta-doc-critic.toml" "$codex_snapshot" 'agents/meta-doc-critic.toml'
 
@@ -80,9 +114,13 @@ install_link "$repo_root/claude/rules" "$claude_home/rules" "$claude_snapshot" '
 install_link "$repo_root/claude/agents" "$claude_home/agents" "$claude_snapshot" 'agents'
 install_link "$repo_root/claude/hooks" "$claude_home/hooks" "$claude_snapshot" 'hooks'
 
+remove_obsolete_managed_link \
+  "$claude_home/skills/frontend-design" \
+  "$repo_root/claude/skills/frontend-design" \
+  "$repo_root/shared/skills/frontend-design"
+
 shared_skills=(
   brain-storming
-  frontend-design
   grill-me
   improve-code-base-architecture
   interface-design
@@ -96,6 +134,8 @@ for name in "${shared_skills[@]}"; do
   install_link "$repo_root/shared/skills/$name" "$claude_home/skills/$name" "$claude_snapshot" "skills/$name"
   install_link "$repo_root/shared/skills/$name" "$agents_skills/$name" "$agents_snapshot" "skills/$name"
 done
+
+install_link "$repo_root/codex/skills/frontend-design" "$agents_skills/frontend-design" "$agents_snapshot" 'skills/frontend-design'
 
 install_link "$repo_root/claude/skills/self-improve" "$claude_home/skills/self-improve" "$claude_snapshot" 'skills/self-improve'
 install_link "$repo_root/codex/skills/self-improve" "$agents_skills/self-improve" "$agents_snapshot" 'skills/self-improve'

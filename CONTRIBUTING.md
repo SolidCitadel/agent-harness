@@ -2,7 +2,8 @@
 
 ## 변경 소속
 
-- 플랫폼과 무관한 원칙과 workflow만 `shared/`에 둔다.
+- 플랫폼과 무관한 원칙과 직접 관리하는 workflow는 `shared/skills/`에 둔다.
+- 외부 배포물은 `shared/vendor/`에 원본 그대로 두고 출처·버전·해시는 `shared/third-party-skills.json`에서 관리한다.
 - Claude Code와 Codex의 discovery 경로, agent 형식, hook, 권한 체계에 묶인 구현은 각 플랫폼 디렉터리에 둔다.
 - 한 플랫폼에서 확인한 변경은 반대편에 같은 실패 원인이 존재할 때만 포팅한다.
 

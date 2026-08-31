@@ -85,6 +85,38 @@ function Install-Link {
     Write-Host "연결: $Destination -> $sourceFull"
 }
 
+function Remove-ObsoleteManagedLink {
+    param(
+        [string]$Path,
+        [string[]]$ExpectedSources
+    )
+
+    $item = Get-Item -Force -LiteralPath $Path -ErrorAction SilentlyContinue
+    if (-not $item) { return }
+    if (-not $item.LinkType -or -not $item.Target) {
+        throw "기존 경로가 관리 링크가 아니므로 자동 이동하지 않습니다: $Path"
+    }
+
+    $matched = $false
+    foreach ($candidate in @($item.Target)) {
+        $target = $candidate
+        if (-not [IO.Path]::IsPathRooted($target)) {
+            $target = Join-Path (Split-Path -Parent $Path) $target
+        }
+        foreach ($expected in $ExpectedSources) {
+            if ([IO.Path]::GetFullPath($target).Equals([IO.Path]::GetFullPath($expected), [StringComparison]::OrdinalIgnoreCase)) {
+                $matched = $true
+            }
+        }
+    }
+    if (-not $matched) {
+        throw "기존 경로의 링크 대상이 관리 대상과 다릅니다: $Path"
+    }
+
+    Remove-Item -LiteralPath $Path
+    Write-Host "이전 관리 링크 제거: $Path"
+}
+
 $snapshotRoot = Join-Path $RepoRoot ".migration-snapshots\$stamp"
 $claudeBackup = Join-Path $snapshotRoot 'claude'
 $codexBackup = Join-Path $snapshotRoot 'codex'
@@ -105,6 +137,8 @@ if (Test-Path -LiteralPath $legacyGit) {
 $fileLinks = @(
     @{ S = 'claude\CLAUDE.md'; D = (Join-Path $claudeHome 'CLAUDE.md'); B = $claudeBackup; R = 'CLAUDE.md' },
     @{ S = 'claude\self-harness-engineering.md'; D = (Join-Path $claudeHome 'self-harness-engineering.md'); B = $claudeBackup; R = 'self-harness-engineering.md' },
+    @{ S = 'claude\commands\frontend-design.md'; D = (Join-Path $claudeHome 'commands\frontend-design.md'); B = $claudeBackup; R = 'commands\frontend-design.md' },
+    @{ S = 'shared\vendor\anthropics\frontend-design\LICENSE.txt'; D = (Join-Path $claudeHome 'commands\frontend-design.LICENSE.txt'); B = $claudeBackup; R = 'commands\frontend-design.LICENSE.txt' },
     @{ S = 'codex\AGENTS.md'; D = (Join-Path $codexHome 'AGENTS.md'); B = $codexBackup; R = 'AGENTS.md' },
     @{ S = 'codex\agents\meta-doc-critic.toml'; D = (Join-Path $codexHome 'agents\meta-doc-critic.toml'); B = $codexBackup; R = 'agents\meta-doc-critic.toml' }
 )
@@ -113,13 +147,20 @@ foreach ($link in $fileLinks) {
     Install-Link -Source (Join-Path $RepoRoot $link.S) -Destination $link.D -BackupRoot $link.B -BackupRelative $link.R -Kind File
 }
 
+Remove-ObsoleteManagedLink `
+    -Path (Join-Path $claudeHome 'skills\frontend-design') `
+    -ExpectedSources @(
+        (Join-Path $RepoRoot 'claude\skills\frontend-design'),
+        (Join-Path $RepoRoot 'shared\skills\frontend-design')
+    )
+
 $directoryLinks = @(
     @{ S = 'claude\rules'; D = (Join-Path $claudeHome 'rules'); B = $claudeBackup; R = 'rules' },
     @{ S = 'claude\agents'; D = (Join-Path $claudeHome 'agents'); B = $claudeBackup; R = 'agents' },
     @{ S = 'claude\hooks'; D = (Join-Path $claudeHome 'hooks'); B = $claudeBackup; R = 'hooks' }
 )
 
-$sharedSkills = @('brain-storming', 'frontend-design', 'grill-me', 'improve-code-base-architecture', 'interface-design', 'review-pull-request', 'structure-documentation', 'ubuiquitous-language', 'port-harness-change')
+$sharedSkills = @('brain-storming', 'grill-me', 'improve-code-base-architecture', 'interface-design', 'review-pull-request', 'structure-documentation', 'ubuiquitous-language', 'port-harness-change')
 foreach ($name in $sharedSkills) {
     $directoryLinks += @{
         S = "shared\skills\$name"
@@ -133,6 +174,13 @@ foreach ($name in $sharedSkills) {
         B = $agentsBackup
         R = "skills\$name"
     }
+}
+
+$directoryLinks += @{
+    S = 'codex\skills\frontend-design'
+    D = Join-Path $agentsSkills 'frontend-design'
+    B = $agentsBackup
+    R = 'skills\frontend-design'
 }
 
 $directoryLinks += @{

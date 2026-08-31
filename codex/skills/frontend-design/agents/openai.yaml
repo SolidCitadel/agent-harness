@@ -1,0 +1,6 @@
+interface:
+  display_name: "Anthropic Frontend Design"
+  short_description: "명시적으로 호출할 때만 사용하는 외부 시각 디자인 skill"
+  default_prompt: "Use $frontend-design for an explicitly requested distinctive visual-design pass."
+policy:
+  allow_implicit_invocation: false

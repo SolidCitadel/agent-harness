@@ -46,12 +46,17 @@ assert_link "$claude_home/CLAUDE.md" "$repo_root/claude/CLAUDE.md"
 assert_link "$claude_home/rules" "$repo_root/claude/rules"
 assert_link "$claude_home/agents" "$repo_root/claude/agents"
 assert_link "$claude_home/hooks" "$repo_root/claude/hooks"
+assert_link "$claude_home/commands/frontend-design.md" "$repo_root/claude/commands/frontend-design.md"
+assert_link "$claude_home/commands/frontend-design.LICENSE.txt" "$repo_root/shared/vendor/anthropics/frontend-design/LICENSE.txt"
+if [[ -e "$claude_home/skills/frontend-design" || -L "$claude_home/skills/frontend-design" ]]; then
+  echo "더 이상 사용하지 않는 경로가 남아 있습니다: $claude_home/skills/frontend-design" >&2
+  exit 1
+fi
 assert_link "$codex_home/AGENTS.md" "$repo_root/codex/AGENTS.md"
 assert_link "$codex_home/agents/meta-doc-critic.toml" "$repo_root/codex/agents/meta-doc-critic.toml"
 
 shared_skills=(
   brain-storming
-  frontend-design
   grill-me
   improve-code-base-architecture
   interface-design
@@ -65,6 +70,8 @@ for name in "${shared_skills[@]}"; do
   assert_link "$claude_home/skills/$name" "$repo_root/shared/skills/$name"
   assert_link "$agents_skills/$name" "$repo_root/shared/skills/$name"
 done
+
+assert_link "$agents_skills/frontend-design" "$repo_root/codex/skills/frontend-design"
 
 assert_link "$claude_home/skills/self-improve" "$repo_root/claude/skills/self-improve"
 assert_link "$agents_skills/self-improve" "$repo_root/codex/skills/self-improve"
@@ -88,5 +95,30 @@ while IFS= read -r -d '' skill; do
   fi
   ((skill_count += 1))
 done < <(find "$repo_root/shared/skills" "$repo_root/claude/skills" "$repo_root/codex/skills" -name SKILL.md -type f -print0)
+
+frontend_policy="$repo_root/codex/skills/frontend-design/agents/openai.yaml"
+if ! grep -Eq '^[[:space:]]*allow_implicit_invocation:[[:space:]]*false[[:space:]]*$' "$frontend_policy"; then
+  echo '외부 frontend-design은 명시적 호출 전용이어야 합니다.' >&2
+  exit 1
+fi
+
+read -r expected_skill_hash expected_license_hash implicit < <(
+  python -c 'import json,sys; d=json.load(open(sys.argv[1],encoding="utf-8"))["frontend-design"]; print(d["upstreamSkillSha256"],d["licenseSha256"],d["implicitInvocation"])' "$repo_root/shared/third-party-skills.json"
+)
+normalized_hash() { tr -d '\r' < "$1" | sha256sum | cut -d ' ' -f 1; }
+actual_skill_hash="$(normalized_hash "$repo_root/shared/vendor/anthropics/frontend-design/SKILL.md")"
+actual_license_hash="$(normalized_hash "$repo_root/shared/vendor/anthropics/frontend-design/LICENSE.txt")"
+codex_skill_hash="$(normalized_hash "$repo_root/codex/skills/frontend-design/SKILL.md")"
+codex_license_hash="$(normalized_hash "$repo_root/codex/skills/frontend-design/LICENSE.txt")"
+claude_skill_hash="$(tr -d '\r' < "$repo_root/claude/commands/frontend-design.md" | sed -e '/^disable-model-invocation:[[:space:]]*true[[:space:]]*$/d' -e 's|^license: Complete terms in frontend-design\.LICENSE\.txt$|license: Complete terms in LICENSE.txt|' | sha256sum | cut -d ' ' -f 1)"
+claude_frontmatter="$(tr -d '\r' < "$repo_root/claude/commands/frontend-design.md" | awk 'NR == 1 { if ($0 != "---") exit 2; next } $0 == "---" { found = 1; exit } { print } END { if (!found) exit 2 }')"
+if ! grep -Eq '^disable-model-invocation:[[:space:]]*true[[:space:]]*$' <<<"$claude_frontmatter"; then
+  echo 'Claude용 frontend-design command는 명시적 호출 전용이어야 합니다.' >&2
+  exit 1
+fi
+if [[ "${implicit,,}" != 'false' || "${actual_skill_hash^^}" != "$expected_skill_hash" || "${actual_license_hash^^}" != "$expected_license_hash" || "${codex_skill_hash^^}" != "${actual_skill_hash^^}" || "${codex_license_hash^^}" != "${actual_license_hash^^}" || "${claude_skill_hash^^}" != "${actual_skill_hash^^}" ]]; then
+  echo 'frontend-design 설치본 또는 호출 정책이 기록된 메타데이터와 다릅니다.' >&2
+  exit 1
+fi
 
 printf '검증 완료: symbolic link와 메타 파일 %d개가 유효합니다.\n' "$skill_count"
