@@ -119,7 +119,7 @@ $directoryLinks = @(
     @{ S = 'claude\hooks'; D = (Join-Path $claudeHome 'hooks'); B = $claudeBackup; R = 'hooks' }
 )
 
-$sharedSkills = @('brain-storming', 'frontend-design', 'grill-me', 'improve-code-base-architecture', 'ubuiquitous-language', 'port-harness-change')
+$sharedSkills = @('brain-storming', 'frontend-design', 'grill-me', 'improve-code-base-architecture', 'interface-design', 'structure-documentation', 'ubuiquitous-language', 'port-harness-change')
 foreach ($name in $sharedSkills) {
     $directoryLinks += @{
         S = "shared\skills\$name"

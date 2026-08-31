@@ -1,0 +1,4 @@
+interface:
+  display_name: "Interface Design"
+  short_description: "승인된 사용자 흐름을 시안과 실제 UI로 충실하게 구현"
+  default_prompt: "Use $interface-design to design and implement this approved interface flow."

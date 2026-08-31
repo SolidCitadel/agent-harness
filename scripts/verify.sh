@@ -54,6 +54,8 @@ shared_skills=(
   frontend-design
   grill-me
   improve-code-base-architecture
+  interface-design
+  structure-documentation
   ubuiquitous-language
   port-harness-change
 )

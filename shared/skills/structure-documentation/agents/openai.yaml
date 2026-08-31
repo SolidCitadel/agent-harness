@@ -1,0 +1,4 @@
+interface:
+  display_name: "Structure Documentation"
+  short_description: "문서별 책임과 정본 및 탐색 구조를 먼저 설계하고 작성"
+  default_prompt: "Use $structure-documentation to design this documentation system before writing it."
