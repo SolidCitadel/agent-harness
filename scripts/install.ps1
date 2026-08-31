@@ -21,12 +21,22 @@ foreach ($path in @($claudeHome, $codexHome, $agentsSkills)) {
 function Test-LinkTarget {
     param([string]$Path)
     $item = Get-Item -Force -LiteralPath $Path -ErrorAction SilentlyContinue
-    if (-not $item -or -not $item.LinkType -or -not $item.Target) { return $false }
-    foreach ($candidate in @($item.Target)) {
-        $target = $candidate
-        if (-not [IO.Path]::IsPathRooted($target)) {
-            $target = Join-Path (Split-Path -Parent $Path) $target
-        }
+    if (-not $item -or -not $item.LinkType) { return $false }
+
+    $targets = @($item.Target)
+    if ($item.LinkType -eq 'HardLink') {
+        $volumeRoot = [IO.Path]::GetPathRoot([IO.Path]::GetFullPath($Path))
+        $targets = @(& fsutil hardlink list $Path 2>$null | ForEach-Object {
+            if ($_.StartsWith([IO.Path]::DirectorySeparatorChar)) {
+                Join-Path $volumeRoot $_.TrimStart([IO.Path]::DirectorySeparatorChar)
+            } else {
+                $_
+            }
+        })
+    }
+
+    foreach ($target in $targets) {
+        if (-not [IO.Path]::IsPathRooted($target)) { $target = Join-Path (Split-Path -Parent $Path) $target }
         if ([IO.Path]::GetFullPath($target).Equals([IO.Path]::GetFullPath($script:ExpectedLinkSource), [StringComparison]::OrdinalIgnoreCase)) {
             return $true
         }

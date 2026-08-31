@@ -12,12 +12,24 @@ $UserHome = [IO.Path]::GetFullPath($UserHome)
 function Assert-Link {
     param([string]$Path, [string]$Expected)
     $item = Get-Item -Force -LiteralPath $Path -ErrorAction Stop
-    if (-not $item.LinkType -or -not $item.Target) { throw "링크가 아닙니다: $Path" }
+    if (-not $item.LinkType) { throw "링크가 아닙니다: $Path" }
     $wanted = [IO.Path]::GetFullPath($Expected)
     $matched = $false
     $actualTargets = @()
-    foreach ($candidate in @($item.Target)) {
-        $target = $candidate
+
+    $targets = @($item.Target)
+    if ($item.LinkType -eq 'HardLink') {
+        $volumeRoot = [IO.Path]::GetPathRoot([IO.Path]::GetFullPath($Path))
+        $targets = @(& fsutil hardlink list $Path 2>$null | ForEach-Object {
+            if ($_.StartsWith([IO.Path]::DirectorySeparatorChar)) {
+                Join-Path $volumeRoot $_.TrimStart([IO.Path]::DirectorySeparatorChar)
+            } else {
+                $_
+            }
+        })
+    }
+
+    foreach ($target in $targets) {
         if (-not [IO.Path]::IsPathRooted($target)) { $target = Join-Path (Split-Path -Parent $Path) $target }
         $actual = [IO.Path]::GetFullPath($target)
         $actualTargets += $actual
