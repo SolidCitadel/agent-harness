@@ -11,16 +11,16 @@ description: 사용자가 Codex가 요구 공백을 임의로 채웠거나 질�
 2. 결과가 잘못된 마지막 시점이 아니라 최초로 근거 없는 결정을 확정한 시점을 찾는다.
 3. 원인을 발견 실패, 결정 정당성 실패, 생산 게이트 실패, 검증 실패로 분류하고 이를 허용한 발동·정보·판정 기준·도구를 추적한다.
 4. 규칙 적용이 목적을 해쳤다면 규칙의 범위·방향·소속을 추적한다.
-5. 메타 문서를 바꾸기 전에 [메타 문서 규율](references/meta-doc.md)을 읽는다. 자기수정 workflow를 바꿀 때는 [self-harness 지도](references/harness-engineering.md)도 읽는다.
+5. 하네스를 바꾸기 전에 `~/.codex/harness-authoring.md`와 `~/.codex/harness-components.md`를 읽는다. 자기수정 구조를 바꿀 때는 `~/.codex/self-harness-architecture.md`도 읽는다.
 
 ## 개입
 
-다음 실행에도 남으면서 전체 실패 경로의 원인을 직접 바꾸는 가장 작은 개입을 고른다. 전역 기본값은 `AGENTS.md`, 반복 workflow는 skill, 독립 검수 역할은 custom agent, 셸 권한 정책은 Codex `.rules`에 둔다. skill이 존재했는데 발동하지 않았다면 본문보다 description을 먼저 검사하고, 여러 skill이 같은 단계를 소유하면 책임을 분리한다. 새 skill은 기존 skill로 책임을 표현할 수 없을 때만 추가한다. 다른 플랫폼의 보철을 Codex에 복제하지 않는다.
+다음 실행에도 남으면서 전체 실패 경로의 원인을 직접 바꾸는 가장 작은 개입을 고른다. 소속과 위치는 `~/.codex/harness-components.md`에서 정한다. skill이 존재했는데 발동하지 않았다면 본문보다 description을 먼저 검사하고, 여러 구성물이 같은 단계를 소유하면 책임을 분리한다. 새 구성물은 기존 책임으로 원인을 바꿀 수 없을 때만 추가한다.
 
 ## 변경과 검증
 
 1. 원인과 최소 수정안을 사용자에게 제안하고 승인받는다.
 2. 승인된 Codex 또는 shared 문서를 편집한다.
-3. `meta_doc_critic` agent에는 대상 경로·원 사건·직접 연결된 workflow만 전달한다. 작성자의 결론이나 기대 답은 넘기지 않는다.
-4. critic 지적을 반영한 최종 상태를 같은 agent로 다시 검수한다. agent를 사용할 수 없는 환경이면 분리된 검수 패스를 수행하고 그 한계를 밝힌다.
+3. self-improve 사건마다 이전 사건의 agent를 재사용하지 않고 부모 대화 이력을 상속하지 않는 새 `meta_doc_critic`을 만든다. 대상 metadata 경로·원 사건·직접 연결된 metadata workflow만 전달하고 작성자의 결론이나 기대 답은 넘기지 않는다. critic은 한 번만 피드백한다. agent를 사용할 수 없는 환경이면 분리된 읽기 전용 검수 패스를 한 번 수행하고 그 한계를 밝힌다.
+4. critic 지적을 반영한 뒤 작성자가 지적별 수정 여부와 직접 회귀를 대조하고 종료한다. 자동 재검수는 하지 않는다. 수정이 원래 계약을 다시 바꾸거나 지적이 상호작용해 직접 판정하기 어렵다면 이유와 범위를 사용자에게 제시하고, 승인받은 경우에만 별도의 fresh critic으로 단발 검수한다.
 5. 원인이 Claude Code에도 존재할 구조적 근거가 있을 때만 `port-harness-change`를 사용한다. 모델 성향이나 Codex 기능에 묶인 문제는 Codex에 남긴다.

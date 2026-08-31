@@ -51,7 +51,16 @@ $claudeHome = Join-Path $UserHome '.claude'
 $codexHome = Join-Path $UserHome '.codex'
 $agentsSkills = Join-Path $UserHome '.agents\skills'
 
+& python (Join-Path $RepoRoot 'scripts\render_global_instructions.py') --check
+if ($LASTEXITCODE -ne 0) { throw '공통 전역 지침 생성물 drift' }
+
 Assert-Link (Join-Path $claudeHome 'CLAUDE.md') (Join-Path $RepoRoot 'claude\CLAUDE.md')
+Assert-Link (Join-Path $claudeHome 'harness-authoring.md') (Join-Path $RepoRoot 'shared\harness-authoring.md')
+Assert-Link (Join-Path $claudeHome 'skill-authoring.md') (Join-Path $RepoRoot 'shared\skill-authoring.md')
+Assert-Link (Join-Path $claudeHome 'agent-authoring.md') (Join-Path $RepoRoot 'shared\agent-authoring.md')
+Assert-Link (Join-Path $claudeHome 'self-harness-architecture.md') (Join-Path $RepoRoot 'shared\self-harness-architecture.md')
+Assert-PathAbsent (Join-Path $claudeHome 'self-harness-engineering.md')
+Assert-Link (Join-Path $claudeHome 'meta-doc-critic.md') (Join-Path $RepoRoot 'shared\meta-doc-critic.md')
 Assert-Link (Join-Path $claudeHome 'rules') (Join-Path $RepoRoot 'claude\rules')
 Assert-Link (Join-Path $claudeHome 'agents') (Join-Path $RepoRoot 'claude\agents')
 Assert-Link (Join-Path $claudeHome 'hooks') (Join-Path $RepoRoot 'claude\hooks')
@@ -59,6 +68,13 @@ Assert-Link (Join-Path $claudeHome 'commands\frontend-design.md') (Join-Path $Re
 Assert-Link (Join-Path $claudeHome 'commands\frontend-design.LICENSE.txt') (Join-Path $RepoRoot 'shared\vendor\anthropics\frontend-design\LICENSE.txt')
 Assert-PathAbsent (Join-Path $claudeHome 'skills\frontend-design')
 Assert-Link (Join-Path $codexHome 'AGENTS.md') (Join-Path $RepoRoot 'codex\AGENTS.md')
+Assert-Link (Join-Path $codexHome 'harness-authoring.md') (Join-Path $RepoRoot 'shared\harness-authoring.md')
+Assert-Link (Join-Path $codexHome 'skill-authoring.md') (Join-Path $RepoRoot 'shared\skill-authoring.md')
+Assert-Link (Join-Path $codexHome 'agent-authoring.md') (Join-Path $RepoRoot 'shared\agent-authoring.md')
+Assert-Link (Join-Path $codexHome 'self-harness-architecture.md') (Join-Path $RepoRoot 'shared\self-harness-architecture.md')
+Assert-Link (Join-Path $codexHome 'meta-doc-critic.md') (Join-Path $RepoRoot 'shared\meta-doc-critic.md')
+Assert-Link (Join-Path $codexHome 'harness-components.md') (Join-Path $RepoRoot 'codex\harness-components.md')
+Assert-PathAbsent (Join-Path $codexHome 'instruction-locations.md')
 Assert-Link (Join-Path $codexHome 'agents\meta-doc-critic.toml') (Join-Path $RepoRoot 'codex\agents\meta-doc-critic.toml')
 
 $skills = @('brain-storming', 'grill-me', 'improve-code-base-architecture', 'interface-design', 'review-pull-request', 'structure-documentation', 'ubuiquitous-language', 'port-harness-change')
@@ -67,6 +83,8 @@ foreach ($name in $skills) {
     Assert-Link (Join-Path $agentsSkills $name) (Join-Path $RepoRoot "shared\skills\$name")
 }
 Assert-Link (Join-Path $agentsSkills 'frontend-design') (Join-Path $RepoRoot 'codex\skills\frontend-design')
+Assert-Link (Join-Path $claudeHome 'skills\refine-harness') (Join-Path $RepoRoot 'claude\skills\refine-harness')
+Assert-Link (Join-Path $agentsSkills 'refine-harness') (Join-Path $RepoRoot 'shared\skills\refine-harness')
 Assert-Link (Join-Path $claudeHome 'skills\self-improve') (Join-Path $RepoRoot 'claude\skills\self-improve')
 Assert-Link (Join-Path $agentsSkills 'self-improve') (Join-Path $RepoRoot 'codex\skills\self-improve')
 
@@ -87,6 +105,40 @@ foreach ($file in $skillFiles) {
 $frontendPolicy = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot 'codex\skills\frontend-design\agents\openai.yaml')
 if ($frontendPolicy -notmatch '(?m)^\s*allow_implicit_invocation:\s*false\s*$') {
     throw '외부 frontend-design은 명시적 호출 전용이어야 합니다.'
+}
+
+$refineSkill = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot 'claude\skills\refine-harness\SKILL.md')
+$refinePolicy = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot 'shared\skills\refine-harness\agents\openai.yaml')
+if ($refineSkill -notmatch '(?m)^disable-model-invocation:\s*true\s*$' -or $refinePolicy -notmatch '(?m)^\s*allow_implicit_invocation:\s*false\s*$') {
+    throw 'refine-harness는 양 플랫폼에서 명시 호출 전용이어야 합니다.'
+}
+if ($refineSkill -notmatch [regex]::Escape('~/.agents/skills/refine-harness/SKILL.md')) {
+    throw 'Claude refine-harness 어댑터가 shared 정본을 참조하지 않습니다.'
+}
+$repoClaude = [IO.File]::ReadAllText((Join-Path $RepoRoot 'CLAUDE.md')).Trim()
+if ($repoClaude -ne '@AGENTS.md') { throw '루트 CLAUDE.md는 AGENTS.md를 참조해야 합니다.' }
+
+$harnessRule = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot 'claude\rules\harness-authoring.md')
+$agentRule = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot 'claude\rules\agents.md')
+$skillRule = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot 'claude\rules\skill-md.md')
+$codexGlobal = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot 'codex\AGENTS.md')
+foreach ($pattern in @('**/AGENTS.override.md', '**/.codex/rules/**/*.rules', '**/.codex/hooks.json', '**/.codex/config.toml')) {
+    if ($harnessRule -notmatch [regex]::Escape($pattern)) { throw "Claude 공통 하네스 rule의 경로 누락: $pattern" }
+}
+if ($harnessRule -notmatch [regex]::Escape('~/.claude/harness-authoring.md')) {
+    throw 'Claude 공통 하네스 rule이 공통 작성 규율을 참조하지 않습니다.'
+}
+if ($skillRule -notmatch [regex]::Escape('~/.claude/skill-authoring.md')) {
+    throw 'Claude skill 작성 rule이 공통 skill 규율을 참조하지 않습니다.'
+}
+if ($agentRule -notmatch [regex]::Escape('**/agents/**/*.toml')) {
+    throw 'Claude agent 작성 rule이 TOML agent를 포함하지 않습니다.'
+}
+if ($agentRule -notmatch [regex]::Escape('~/.claude/agent-authoring.md')) {
+    throw 'Claude agent 작성 rule이 공통 agent 규율을 참조하지 않습니다.'
+}
+foreach ($reference in @('~/.codex/harness-authoring.md', '~/.codex/harness-components.md')) {
+    if ($codexGlobal -notmatch [regex]::Escape($reference)) { throw "Codex 전역 하네스 라우팅 누락: $reference" }
 }
 
 $thirdParty = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot 'shared\third-party-skills.json') | ConvertFrom-Json

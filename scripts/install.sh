@@ -23,23 +23,18 @@ done
 
 repo_root="$(realpath -- "$repo_root")"
 user_home="$(realpath -m -- "$user_home")"
-stamp="$(date +%Y%m%d-%H%M%S)"
 claude_home="$user_home/.claude"
 codex_home="$user_home/.codex"
 agents_skills="$user_home/.agents/skills"
-snapshot_root="$repo_root/.migration-snapshots/$stamp"
-claude_snapshot="$snapshot_root/claude"
-codex_snapshot="$snapshot_root/codex"
-agents_snapshot="$snapshot_root/agents"
 
+python_bin="$(command -v python3 || command -v python)"
+"$python_bin" "$repo_root/scripts/render_global_instructions.py"
 mkdir -p -- "$claude_home" "$codex_home" "$agents_skills"
 
 install_link() {
-  local source destination snapshot_root snapshot_relative actual snapshot_path
+  local source destination actual
   source="$(realpath -- "$1")"
   destination="$2"
-  snapshot_root="$3"
-  snapshot_relative="$4"
 
   if [[ -L "$destination" ]]; then
     actual="$(readlink -f -- "$destination" || true)"
@@ -48,12 +43,9 @@ install_link() {
       return
     fi
   fi
-
   if [[ -e "$destination" || -L "$destination" ]]; then
-    snapshot_path="$snapshot_root/$snapshot_relative"
-    mkdir -p -- "$(dirname -- "$snapshot_path")"
-    mv -- "$destination" "$snapshot_path"
-    printf '스냅샷: %s -> %s\n' "$destination" "$snapshot_path"
+    echo "기존 경로가 관리 링크와 다릅니다: $destination" >&2
+    exit 1
   fi
 
   mkdir -p -- "$(dirname -- "$destination")"
@@ -61,63 +53,26 @@ install_link() {
   printf '연결: %s -> %s\n' "$destination" "$source"
 }
 
-remove_obsolete_managed_link() {
-  local path raw_target actual expected matched
-  path="$1"
-  shift
+install_link "$repo_root/claude/CLAUDE.md" "$claude_home/CLAUDE.md"
+install_link "$repo_root/shared/harness-authoring.md" "$claude_home/harness-authoring.md"
+install_link "$repo_root/shared/skill-authoring.md" "$claude_home/skill-authoring.md"
+install_link "$repo_root/shared/agent-authoring.md" "$claude_home/agent-authoring.md"
+install_link "$repo_root/shared/self-harness-architecture.md" "$claude_home/self-harness-architecture.md"
+install_link "$repo_root/shared/meta-doc-critic.md" "$claude_home/meta-doc-critic.md"
+install_link "$repo_root/claude/commands/frontend-design.md" "$claude_home/commands/frontend-design.md"
+install_link "$repo_root/shared/vendor/anthropics/frontend-design/LICENSE.txt" "$claude_home/commands/frontend-design.LICENSE.txt"
+install_link "$repo_root/codex/AGENTS.md" "$codex_home/AGENTS.md"
+install_link "$repo_root/shared/harness-authoring.md" "$codex_home/harness-authoring.md"
+install_link "$repo_root/shared/skill-authoring.md" "$codex_home/skill-authoring.md"
+install_link "$repo_root/shared/agent-authoring.md" "$codex_home/agent-authoring.md"
+install_link "$repo_root/shared/self-harness-architecture.md" "$codex_home/self-harness-architecture.md"
+install_link "$repo_root/shared/meta-doc-critic.md" "$codex_home/meta-doc-critic.md"
+install_link "$repo_root/codex/harness-components.md" "$codex_home/harness-components.md"
+install_link "$repo_root/codex/agents/meta-doc-critic.toml" "$codex_home/agents/meta-doc-critic.toml"
 
-  [[ -e "$path" || -L "$path" ]] || return
-  if [[ ! -L "$path" ]]; then
-    echo "기존 경로가 관리 링크가 아니므로 자동 이동하지 않습니다: $path" >&2
-    exit 1
-  fi
-
-  raw_target="$(readlink -- "$path")"
-  if [[ "$raw_target" == /* ]]; then
-    actual="$(realpath -m -- "$raw_target")"
-  else
-    actual="$(realpath -m -- "$(dirname -- "$path")/$raw_target")"
-  fi
-  matched=false
-  for expected in "$@"; do
-    if [[ "$actual" == "$(realpath -m -- "$expected")" ]]; then
-      matched=true
-    fi
-  done
-  if [[ "$matched" != true ]]; then
-    echo "기존 경로의 링크 대상이 관리 대상과 다릅니다: $path" >&2
-    exit 1
-  fi
-
-  rm -- "$path"
-  printf '이전 관리 링크 제거: %s\n' "$path"
-}
-
-if [[ -e "$claude_home/.git" ]]; then
-  legacy_snapshot="$claude_snapshot/legacy-repository"
-  mkdir -p -- "$legacy_snapshot"
-  mv -- "$claude_home/.git" "$legacy_snapshot/.git"
-  if [[ -e "$claude_home/.gitignore" ]]; then
-    mv -- "$claude_home/.gitignore" "$legacy_snapshot/.gitignore"
-  fi
-  printf '기존 ~/.claude Git 메타데이터 스냅샷: %s\n' "$legacy_snapshot"
-fi
-
-install_link "$repo_root/claude/CLAUDE.md" "$claude_home/CLAUDE.md" "$claude_snapshot" 'CLAUDE.md'
-install_link "$repo_root/claude/self-harness-engineering.md" "$claude_home/self-harness-engineering.md" "$claude_snapshot" 'self-harness-engineering.md'
-install_link "$repo_root/claude/commands/frontend-design.md" "$claude_home/commands/frontend-design.md" "$claude_snapshot" 'commands/frontend-design.md'
-install_link "$repo_root/shared/vendor/anthropics/frontend-design/LICENSE.txt" "$claude_home/commands/frontend-design.LICENSE.txt" "$claude_snapshot" 'commands/frontend-design.LICENSE.txt'
-install_link "$repo_root/codex/AGENTS.md" "$codex_home/AGENTS.md" "$codex_snapshot" 'AGENTS.md'
-install_link "$repo_root/codex/agents/meta-doc-critic.toml" "$codex_home/agents/meta-doc-critic.toml" "$codex_snapshot" 'agents/meta-doc-critic.toml'
-
-install_link "$repo_root/claude/rules" "$claude_home/rules" "$claude_snapshot" 'rules'
-install_link "$repo_root/claude/agents" "$claude_home/agents" "$claude_snapshot" 'agents'
-install_link "$repo_root/claude/hooks" "$claude_home/hooks" "$claude_snapshot" 'hooks'
-
-remove_obsolete_managed_link \
-  "$claude_home/skills/frontend-design" \
-  "$repo_root/claude/skills/frontend-design" \
-  "$repo_root/shared/skills/frontend-design"
+install_link "$repo_root/claude/rules" "$claude_home/rules"
+install_link "$repo_root/claude/agents" "$claude_home/agents"
+install_link "$repo_root/claude/hooks" "$claude_home/hooks"
 
 shared_skills=(
   brain-storming
@@ -131,13 +86,14 @@ shared_skills=(
 )
 
 for name in "${shared_skills[@]}"; do
-  install_link "$repo_root/shared/skills/$name" "$claude_home/skills/$name" "$claude_snapshot" "skills/$name"
-  install_link "$repo_root/shared/skills/$name" "$agents_skills/$name" "$agents_snapshot" "skills/$name"
+  install_link "$repo_root/shared/skills/$name" "$claude_home/skills/$name"
+  install_link "$repo_root/shared/skills/$name" "$agents_skills/$name"
 done
 
-install_link "$repo_root/codex/skills/frontend-design" "$agents_skills/frontend-design" "$agents_snapshot" 'skills/frontend-design'
-
-install_link "$repo_root/claude/skills/self-improve" "$claude_home/skills/self-improve" "$claude_snapshot" 'skills/self-improve'
-install_link "$repo_root/codex/skills/self-improve" "$agents_skills/self-improve" "$agents_snapshot" 'skills/self-improve'
+install_link "$repo_root/codex/skills/frontend-design" "$agents_skills/frontend-design"
+install_link "$repo_root/claude/skills/refine-harness" "$claude_home/skills/refine-harness"
+install_link "$repo_root/shared/skills/refine-harness" "$agents_skills/refine-harness"
+install_link "$repo_root/claude/skills/self-improve" "$claude_home/skills/self-improve"
+install_link "$repo_root/codex/skills/self-improve" "$agents_skills/self-improve"
 
 printf '설치 완료: %s\n' "$repo_root"

@@ -1,6 +1,6 @@
 # agent-harness
 
-Claude Code와 Codex의 개인 운영 원칙과 재사용 워크플로를 관리한다.
+Claude Code와 Codex의 개인 운영 지침과 재사용 workflow를 관리한다. 자기수정 구성요소의 책임은 `shared/self-harness-architecture.md`에 정리한다.
 
 - `shared/skills/`: 직접 관리하는 플랫폼 공통 workflow
 - `shared/vendor/`: 수정하지 않는 외부 원본과 라이선스
@@ -36,8 +36,10 @@ Bash에서 실행한다.
 
 Linux에서는 파일과 디렉터리를 symbolic link로 연결한다.
 
+설치기는 공통 섹션과 플랫폼 template에서 전역 지침을 생성하고 관리 파일을 제품 discovery 경로에 연결한다. 이미 다른 파일이나 링크가 있는 경로는 변경하지 않고 중단한다.
+
 ## 변경 흐름
 
-플랫폼에서 발견한 문제는 먼저 해당 플랫폼의 `self-improve`로 고친다. 다른 플랫폼에도 같은 실패 원인이 존재할 때만 `port-harness-change`로 의미를 옮긴다. 양쪽 파일을 기계적으로 같게 만들지 않는다.
+플랫폼에서 발견한 문제는 해당 플랫폼의 `self-improve`로 고친다. 다른 플랫폼에도 같은 실패 원인이 존재할 때 `port-harness-change`로 의미를 옮긴다. 하네스 전체의 비용과 중복을 줄이는 작업은 명시 호출 전용 `refine-harness`를 사용한다.
 
 변경 소속, 검증, 커밋 규약은 `CONTRIBUTING.md`에서 관리한다.

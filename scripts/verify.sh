@@ -27,6 +27,9 @@ claude_home="$user_home/.claude"
 codex_home="$user_home/.codex"
 agents_skills="$user_home/.agents/skills"
 
+python_bin="$(command -v python3 || command -v python)"
+"$python_bin" "$repo_root/scripts/render_global_instructions.py" --check
+
 assert_link() {
   local path expected actual
   path="$1"
@@ -42,17 +45,36 @@ assert_link() {
   fi
 }
 
+assert_path_absent() {
+  local path
+  path="$1"
+  if [[ -e "$path" || -L "$path" ]]; then
+    echo "더 이상 사용하지 않는 경로가 남아 있습니다: $path" >&2
+    exit 1
+  fi
+}
+
 assert_link "$claude_home/CLAUDE.md" "$repo_root/claude/CLAUDE.md"
+assert_link "$claude_home/harness-authoring.md" "$repo_root/shared/harness-authoring.md"
+assert_link "$claude_home/skill-authoring.md" "$repo_root/shared/skill-authoring.md"
+assert_link "$claude_home/agent-authoring.md" "$repo_root/shared/agent-authoring.md"
+assert_link "$claude_home/self-harness-architecture.md" "$repo_root/shared/self-harness-architecture.md"
+assert_path_absent "$claude_home/self-harness-engineering.md"
+assert_link "$claude_home/meta-doc-critic.md" "$repo_root/shared/meta-doc-critic.md"
 assert_link "$claude_home/rules" "$repo_root/claude/rules"
 assert_link "$claude_home/agents" "$repo_root/claude/agents"
 assert_link "$claude_home/hooks" "$repo_root/claude/hooks"
 assert_link "$claude_home/commands/frontend-design.md" "$repo_root/claude/commands/frontend-design.md"
 assert_link "$claude_home/commands/frontend-design.LICENSE.txt" "$repo_root/shared/vendor/anthropics/frontend-design/LICENSE.txt"
-if [[ -e "$claude_home/skills/frontend-design" || -L "$claude_home/skills/frontend-design" ]]; then
-  echo "더 이상 사용하지 않는 경로가 남아 있습니다: $claude_home/skills/frontend-design" >&2
-  exit 1
-fi
+assert_path_absent "$claude_home/skills/frontend-design"
 assert_link "$codex_home/AGENTS.md" "$repo_root/codex/AGENTS.md"
+assert_link "$codex_home/harness-authoring.md" "$repo_root/shared/harness-authoring.md"
+assert_link "$codex_home/skill-authoring.md" "$repo_root/shared/skill-authoring.md"
+assert_link "$codex_home/agent-authoring.md" "$repo_root/shared/agent-authoring.md"
+assert_link "$codex_home/self-harness-architecture.md" "$repo_root/shared/self-harness-architecture.md"
+assert_link "$codex_home/meta-doc-critic.md" "$repo_root/shared/meta-doc-critic.md"
+assert_link "$codex_home/harness-components.md" "$repo_root/codex/harness-components.md"
+assert_path_absent "$codex_home/instruction-locations.md"
 assert_link "$codex_home/agents/meta-doc-critic.toml" "$repo_root/codex/agents/meta-doc-critic.toml"
 
 shared_skills=(
@@ -72,6 +94,8 @@ for name in "${shared_skills[@]}"; do
 done
 
 assert_link "$agents_skills/frontend-design" "$repo_root/codex/skills/frontend-design"
+assert_link "$claude_home/skills/refine-harness" "$repo_root/claude/skills/refine-harness"
+assert_link "$agents_skills/refine-harness" "$repo_root/shared/skills/refine-harness"
 
 assert_link "$claude_home/skills/self-improve" "$repo_root/claude/skills/self-improve"
 assert_link "$agents_skills/self-improve" "$repo_root/codex/skills/self-improve"
@@ -101,6 +125,55 @@ if ! grep -Eq '^[[:space:]]*allow_implicit_invocation:[[:space:]]*false[[:space:
   echo '외부 frontend-design은 명시적 호출 전용이어야 합니다.' >&2
   exit 1
 fi
+
+refine_skill="$repo_root/claude/skills/refine-harness/SKILL.md"
+refine_policy="$repo_root/shared/skills/refine-harness/agents/openai.yaml"
+if ! grep -Eq '^disable-model-invocation:[[:space:]]*true[[:space:]]*$' "$refine_skill" \
+  || ! grep -Eq '^[[:space:]]*allow_implicit_invocation:[[:space:]]*false[[:space:]]*$' "$refine_policy"; then
+  echo 'refine-harness는 양 플랫폼에서 명시 호출 전용이어야 합니다.' >&2
+  exit 1
+fi
+if ! grep -Fq '~/.agents/skills/refine-harness/SKILL.md' "$refine_skill"; then
+  echo 'Claude refine-harness 어댑터가 shared 정본을 참조하지 않습니다.' >&2
+  exit 1
+fi
+if [[ "$(tr -d '\r' < "$repo_root/CLAUDE.md")" != '@AGENTS.md' ]]; then
+  echo '루트 CLAUDE.md는 AGENTS.md를 참조해야 합니다.' >&2
+  exit 1
+fi
+
+harness_rule="$repo_root/claude/rules/harness-authoring.md"
+agent_rule="$repo_root/claude/rules/agents.md"
+skill_rule="$repo_root/claude/rules/skill-md.md"
+codex_global="$repo_root/codex/AGENTS.md"
+for pattern in '**/AGENTS.override.md' '**/.codex/rules/**/*.rules' '**/.codex/hooks.json' '**/.codex/config.toml'; do
+  if ! grep -Fq -- "$pattern" "$harness_rule"; then
+    echo "Claude 공통 하네스 rule의 경로 누락: $pattern" >&2
+    exit 1
+  fi
+done
+if ! grep -Fq -- '~/.claude/harness-authoring.md' "$harness_rule"; then
+  echo 'Claude 공통 하네스 rule이 공통 작성 규율을 참조하지 않습니다.' >&2
+  exit 1
+fi
+if ! grep -Fq -- '~/.claude/skill-authoring.md' "$skill_rule"; then
+  echo 'Claude skill 작성 rule이 공통 skill 규율을 참조하지 않습니다.' >&2
+  exit 1
+fi
+if ! grep -Fq -- '**/agents/**/*.toml' "$agent_rule"; then
+  echo 'Claude agent 작성 rule이 TOML agent를 포함하지 않습니다.' >&2
+  exit 1
+fi
+if ! grep -Fq -- '~/.claude/agent-authoring.md' "$agent_rule"; then
+  echo 'Claude agent 작성 rule이 공통 agent 규율을 참조하지 않습니다.' >&2
+  exit 1
+fi
+for reference in '~/.codex/harness-authoring.md' '~/.codex/harness-components.md'; do
+  if ! grep -Fq -- "$reference" "$codex_global"; then
+    echo "Codex 전역 하네스 라우팅 누락: $reference" >&2
+    exit 1
+  fi
+done
 
 read -r expected_skill_hash expected_license_hash implicit < <(
   python -c 'import json,sys; d=json.load(open(sys.argv[1],encoding="utf-8"))["frontend-design"]; print(d["upstreamSkillSha256"],d["licenseSha256"],d["implicitInvocation"])' "$repo_root/shared/third-party-skills.json"

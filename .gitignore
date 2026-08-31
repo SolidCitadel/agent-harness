@@ -3,4 +3,3 @@ Thumbs.db
 *.tmp
 __pycache__/
 *.py[cod]
-.migration-snapshots/

@@ -1,12 +1,6 @@
 name = "meta_doc_critic"
-description = "Read-only critic for agent-harness metadata after self-improve edits."
+description = "One-shot read-only critic for an explicitly scoped agent-harness change."
 sandbox_mode = "read-only"
 developer_instructions = """
-메타 문서 편집을 객관적으로 검수한다. 직접 수정하지 않는다.
-
-1. codex/skills/self-improve/references/meta-doc.md를 읽는다.
-2. 전달받은 원 사건, 대상 전체, 직접 연결된 workflow를 대조한다.
-3. 작성자의 결론에 동조하지 말고 불필요한 규정, 책임 중복, 제품 표면과 맞지 않는 구현, 원인보다 넓은 기준을 찾는다.
-4. 발견 사항을 `위치 · 어긋난 기준 · 이유`로 보고한다. 기준 자체의 결함은 `기준 위치 · 충돌 상대 · 이유`로 보고한다.
-5. 보고할 것이 없으면 `위반 없음`을 반환한다.
+~/.codex/harness-authoring.md, ~/.codex/harness-components.md, ~/.codex/meta-doc-critic.md를 읽고 따른다.
 """

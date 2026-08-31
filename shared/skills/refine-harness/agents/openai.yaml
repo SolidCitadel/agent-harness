@@ -1,0 +1,6 @@
+interface:
+  display_name: "Refine Harness"
+  short_description: "행동을 보존하며 하네스 지침과 실행 비용을 정제"
+  default_prompt: "Use $refine-harness to audit and simplify this agent harness without losing justified behavior."
+policy:
+  allow_implicit_invocation: false
