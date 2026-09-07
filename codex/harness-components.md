@@ -9,3 +9,7 @@
 - 격리된 판단, 독립 검수, 반복되는 전문 역할은 agent에 둔다. 개인 agent는 `~/.codex/agents/*.toml`, 프로젝트 agent는 `.codex/agents/*.toml`에 두며, agent를 다룰 때 `~/.codex/agent-authoring.md`를 읽는다.
 - 제품 수명주기의 기계적 검사는 Codex hook에 둔다. 개인 hook은 `~/.codex/hooks.json` 또는 `~/.codex/config.toml`, 프로젝트 hook은 `.codex/hooks.json` 또는 `.codex/config.toml`에서 관리한다.
 - 샌드박스 밖 명령의 허용·질문·차단만 Codex `.rules`에 둔다.
+
+## 하네스 개정 검수
+
+하네스 개정의 독립 검수는 부모 이력을 상속하지 않는 새 `meta_doc_critic`을 호출한다. 공통 작성 규율이 정한 입력을 전달한다.
