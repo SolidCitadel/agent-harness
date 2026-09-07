@@ -1,6 +1,0 @@
-name = "meta_doc_critic"
-description = "One-shot read-only critic for an explicitly scoped agent-harness change."
-sandbox_mode = "read-only"
-developer_instructions = """
-~/.codex/harness-authoring.md, ~/.codex/harness-components.md, ~/.codex/meta-doc-critic.md를 읽고 따른다.
-"""

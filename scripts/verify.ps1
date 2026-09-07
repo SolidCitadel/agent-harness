@@ -1,19 +1,25 @@
 [CmdletBinding()]
 param(
-    [string]$RepoRoot = (Split-Path -Parent $PSScriptRoot),
+    [string]$RepoRoot,
     [string]$UserHome = $HOME
 )
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+if (-not $RepoRoot) { $RepoRoot = Split-Path -Parent $PSScriptRoot }
 $RepoRoot = [IO.Path]::GetFullPath($RepoRoot)
 $UserHome = [IO.Path]::GetFullPath($UserHome)
+
+$fileStateChecks = [System.Collections.Generic.List[object]]::new()
 
 function Assert-Link {
     param([string]$Path, [string]$Expected)
     $item = Get-Item -Force -LiteralPath $Path -ErrorAction Stop
     if (-not $item.LinkType) { throw "링크가 아닙니다: $Path" }
     $wanted = [IO.Path]::GetFullPath($Expected)
+    if (Test-Path -LiteralPath $Expected -PathType Leaf) {
+        $fileStateChecks.Add(@{ S = $wanted; D = [IO.Path]::GetFullPath($Path) })
+    }
     $matched = $false
     $actualTargets = @()
 
@@ -60,7 +66,7 @@ Assert-Link (Join-Path $claudeHome 'skill-authoring.md') (Join-Path $RepoRoot 's
 Assert-Link (Join-Path $claudeHome 'agent-authoring.md') (Join-Path $RepoRoot 'shared\agent-authoring.md')
 Assert-Link (Join-Path $claudeHome 'self-harness-architecture.md') (Join-Path $RepoRoot 'shared\self-harness-architecture.md')
 Assert-PathAbsent (Join-Path $claudeHome 'self-harness-engineering.md')
-Assert-Link (Join-Path $claudeHome 'meta-doc-critic.md') (Join-Path $RepoRoot 'shared\meta-doc-critic.md')
+Assert-Link (Join-Path $claudeHome 'harness-review.md') (Join-Path $RepoRoot 'shared\harness-review.md')
 Assert-Link (Join-Path $claudeHome 'rules') (Join-Path $RepoRoot 'claude\rules')
 Assert-Link (Join-Path $claudeHome 'agents') (Join-Path $RepoRoot 'claude\agents')
 Assert-Link (Join-Path $claudeHome 'hooks') (Join-Path $RepoRoot 'claude\hooks')
@@ -72,10 +78,10 @@ Assert-Link (Join-Path $codexHome 'harness-authoring.md') (Join-Path $RepoRoot '
 Assert-Link (Join-Path $codexHome 'skill-authoring.md') (Join-Path $RepoRoot 'shared\skill-authoring.md')
 Assert-Link (Join-Path $codexHome 'agent-authoring.md') (Join-Path $RepoRoot 'shared\agent-authoring.md')
 Assert-Link (Join-Path $codexHome 'self-harness-architecture.md') (Join-Path $RepoRoot 'shared\self-harness-architecture.md')
-Assert-Link (Join-Path $codexHome 'meta-doc-critic.md') (Join-Path $RepoRoot 'shared\meta-doc-critic.md')
+Assert-Link (Join-Path $codexHome 'harness-review.md') (Join-Path $RepoRoot 'shared\harness-review.md')
 Assert-Link (Join-Path $codexHome 'harness-components.md') (Join-Path $RepoRoot 'codex\harness-components.md')
 Assert-PathAbsent (Join-Path $codexHome 'instruction-locations.md')
-Assert-Link (Join-Path $codexHome 'agents\meta-doc-critic.toml') (Join-Path $RepoRoot 'codex\agents\meta-doc-critic.toml')
+Assert-Link (Join-Path $codexHome 'agents\harness-reviewer.toml') (Join-Path $RepoRoot 'codex\agents\harness-reviewer.toml')
 
 $skills = @('brain-storming', 'grill-me', 'improve-code-base-architecture', 'interface-design', 'review-pull-request', 'structure-documentation', 'ubuiquitous-language', 'port-harness-change')
 foreach ($name in $skills) {
@@ -88,8 +94,8 @@ Assert-Link (Join-Path $agentsSkills 'refine-harness') (Join-Path $RepoRoot 'sha
 Assert-Link (Join-Path $claudeHome 'skills\self-improve') (Join-Path $RepoRoot 'claude\skills\self-improve')
 Assert-Link (Join-Path $agentsSkills 'self-improve') (Join-Path $RepoRoot 'codex\skills\self-improve')
 
-& python -c "import pathlib,sys,tomllib; tomllib.loads(pathlib.Path(sys.argv[1]).read_text(encoding='utf-8'))" (Join-Path $RepoRoot 'codex\agents\meta-doc-critic.toml')
-if ($LASTEXITCODE -ne 0) { throw 'Codex critic agent TOML 검증 실패' }
+& python -c "import pathlib,sys,tomllib; tomllib.loads(pathlib.Path(sys.argv[1]).read_text(encoding='utf-8'))" (Join-Path $RepoRoot 'codex\agents\harness-reviewer.toml')
+if ($LASTEXITCODE -ne 0) { throw 'Codex harness reviewer agent TOML 검증 실패' }
 
 $skillFiles = @()
 foreach ($skillRoot in @('shared\skills', 'claude\skills', 'codex\skills')) {
@@ -181,6 +187,21 @@ if ($claudeFrontmatter -notmatch '(?m)^disable-model-invocation:\s*true\s*$') {
 }
 if ($skillHash -ne $frontendSource.upstreamSkillSha256 -or $licenseHash -ne $frontendSource.licenseSha256 -or $codexSkillHash -ne $skillHash -or $codexLicenseHash -ne $licenseHash -or $claudeSkillHash -ne $skillHash) {
     throw 'frontend-design 설치본이 기록된 해시와 다릅니다.'
+}
+
+Assert-PathAbsent (Join-Path $claudeHome 'meta-doc-critic.md')
+Assert-PathAbsent (Join-Path $codexHome 'meta-doc-critic.md')
+Assert-PathAbsent (Join-Path $codexHome 'agents\meta-doc-critic.toml')
+Assert-PathAbsent (Join-Path $claudeHome 'agents\meta-doc-critic.md')
+
+$fileRequest = @{ repo = $RepoRoot; home = $UserHome; links = @($fileStateChecks.ToArray()) } | ConvertTo-Json -Depth 5
+$requestPath = [IO.Path]::GetTempFileName()
+try {
+    [IO.File]::WriteAllText($requestPath, $fileRequest, [Text.UTF8Encoding]::new($false))
+    & python (Join-Path $RepoRoot 'scripts/windows_file_links.py') --request $requestPath --verify
+    if ($LASTEXITCODE -ne 0) { throw '파일 링크 또는 설치 상태 처리 실패' }
+} finally {
+    Remove-Item -LiteralPath $requestPath
 }
 
 Write-Host "검증 완료: 링크와 메타 파일 $($skillFiles.Count)개가 유효합니다."

@@ -46,4 +46,4 @@ globs:
 
 ## 하네스 개정 검수
 
-하네스 개정의 독립 검수는 작성 대화 이력을 전달하지 않고 새 `meta-doc-critic`을 호출한다. 공통 작성 규율이 정한 입력을 전달한다.
+`~/.claude/harness-review.md`를 읽고 입력을 준비한 뒤, 작성 대화 이력을 전달하지 않고 새 `harness-reviewer`를 호출한다.

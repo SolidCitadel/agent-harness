@@ -1,5 +1,9 @@
 # Self-harness 구조
 
+- 하네스: AI의 작업 수행을 유도·제약·지원하는 지침, 실행 설정·장치와 그 연결 구조.
+- 하네스 구성물: 하네스를 이루는 개별 지침·skill·agent 명세·rule·hook 등.
+- agent 명세: 역할을 특정 플랫폼에서 실행하도록 이름·설정·지침 연결을 선언한 구성물.
+
 | 구성물 | 책임 |
 |---|---|
 | `shared/global-instructions.md` | 양 플랫폼 전역 지침의 공통 섹션 |
@@ -11,5 +15,6 @@
 | `claude/rules/harness-authoring.md` | Claude Code의 구성물 유형과 전역·프로젝트 위치 |
 | 플랫폼별 `self-improve` | 관찰된 실패의 원인 교정 |
 | `shared/skills/refine-harness` | 기존 동작을 보존하며 하네스 비용을 줄이는 절차 |
-| `shared/meta-doc-critic.md`, 플랫폼별 critic agent | 하네스 변경의 단발 독립 검수 계약과 실행 형식 |
+| `shared/harness-review.md` | 호출자가 제공할 입력과 하네스 검수자의 범위·권한·출력 |
+| `codex/agents/harness-reviewer.toml`, `claude/agents/harness-reviewer.md` | 하네스 검수 역할의 플랫폼별 실행 설정과 공통 계약 연결 |
 | `shared/skills/port-harness-change` | 확인된 플랫폼 변경의 선택적 포팅 |

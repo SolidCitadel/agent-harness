@@ -58,7 +58,7 @@ install_link "$repo_root/shared/harness-authoring.md" "$claude_home/harness-auth
 install_link "$repo_root/shared/skill-authoring.md" "$claude_home/skill-authoring.md"
 install_link "$repo_root/shared/agent-authoring.md" "$claude_home/agent-authoring.md"
 install_link "$repo_root/shared/self-harness-architecture.md" "$claude_home/self-harness-architecture.md"
-install_link "$repo_root/shared/meta-doc-critic.md" "$claude_home/meta-doc-critic.md"
+install_link "$repo_root/shared/harness-review.md" "$claude_home/harness-review.md"
 install_link "$repo_root/claude/commands/frontend-design.md" "$claude_home/commands/frontend-design.md"
 install_link "$repo_root/shared/vendor/anthropics/frontend-design/LICENSE.txt" "$claude_home/commands/frontend-design.LICENSE.txt"
 install_link "$repo_root/codex/AGENTS.md" "$codex_home/AGENTS.md"
@@ -66,9 +66,9 @@ install_link "$repo_root/shared/harness-authoring.md" "$codex_home/harness-autho
 install_link "$repo_root/shared/skill-authoring.md" "$codex_home/skill-authoring.md"
 install_link "$repo_root/shared/agent-authoring.md" "$codex_home/agent-authoring.md"
 install_link "$repo_root/shared/self-harness-architecture.md" "$codex_home/self-harness-architecture.md"
-install_link "$repo_root/shared/meta-doc-critic.md" "$codex_home/meta-doc-critic.md"
+install_link "$repo_root/shared/harness-review.md" "$codex_home/harness-review.md"
 install_link "$repo_root/codex/harness-components.md" "$codex_home/harness-components.md"
-install_link "$repo_root/codex/agents/meta-doc-critic.toml" "$codex_home/agents/meta-doc-critic.toml"
+install_link "$repo_root/codex/agents/harness-reviewer.toml" "$codex_home/agents/harness-reviewer.toml"
 
 install_link "$repo_root/claude/rules" "$claude_home/rules"
 install_link "$repo_root/claude/agents" "$claude_home/agents"
@@ -95,5 +95,32 @@ install_link "$repo_root/claude/skills/refine-harness" "$claude_home/skills/refi
 install_link "$repo_root/shared/skills/refine-harness" "$agents_skills/refine-harness"
 install_link "$repo_root/claude/skills/self-improve" "$claude_home/skills/self-improve"
 install_link "$repo_root/codex/skills/self-improve" "$agents_skills/self-improve"
+
+# 새 설치가 성공한 뒤 원본 경로 또는 inode로 관리 소유를 확인한다.
+remove_previous_link() {
+  local destination old_source new_source installed actual target
+  destination="$1"; old_source="$2"; new_source="$3"; installed="$4"
+  [[ -L "$installed" && "$(readlink -f -- "$installed")" == "$new_source" ]] || {
+    echo "새 관리 링크 검증 실패: $installed" >&2; exit 1;
+  }
+  [[ -e "$destination" || -L "$destination" ]] || return 0
+  if [[ -L "$destination" ]]; then
+    target="$(readlink -- "$destination")"
+    [[ "$target" = /* ]] || target="$(dirname -- "$destination")/$target"
+    actual="$(realpath -m -s -- "$target")"
+    if [[ "$actual" == "$old_source" || "$actual" == "$new_source" ]]; then
+      rm -- "$destination"
+      return
+    fi
+  elif [[ -f "$destination" && "$destination" -ef "$new_source" ]]; then
+    rm -- "$destination"
+    return
+  fi
+  echo "이전 비관리 경로를 보존했습니다: $destination" >&2
+  exit 1
+}
+remove_previous_link "$claude_home/meta-doc-critic.md" "$repo_root/shared/meta-doc-critic.md" "$repo_root/shared/harness-review.md" "$claude_home/harness-review.md"
+remove_previous_link "$codex_home/meta-doc-critic.md" "$repo_root/shared/meta-doc-critic.md" "$repo_root/shared/harness-review.md" "$codex_home/harness-review.md"
+remove_previous_link "$codex_home/agents/meta-doc-critic.toml" "$repo_root/codex/agents/meta-doc-critic.toml" "$repo_root/codex/agents/harness-reviewer.toml" "$codex_home/agents/harness-reviewer.toml"
 
 printf '설치 완료: %s\n' "$repo_root"

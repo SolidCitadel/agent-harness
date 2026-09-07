@@ -1,12 +1,13 @@
 [CmdletBinding()]
 param(
-    [string]$RepoRoot = (Split-Path -Parent $PSScriptRoot),
+    [string]$RepoRoot,
     [string]$UserHome = $HOME
 )
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
+if (-not $RepoRoot) { $RepoRoot = Split-Path -Parent $PSScriptRoot }
 $RepoRoot = [IO.Path]::GetFullPath($RepoRoot)
 $UserHome = [IO.Path]::GetFullPath($UserHome)
 $claudeHome = Join-Path $UserHome '.claude'
@@ -87,7 +88,7 @@ $fileLinks = @(
     @{ S = 'shared\skill-authoring.md'; D = (Join-Path $claudeHome 'skill-authoring.md') },
     @{ S = 'shared\agent-authoring.md'; D = (Join-Path $claudeHome 'agent-authoring.md') },
     @{ S = 'shared\self-harness-architecture.md'; D = (Join-Path $claudeHome 'self-harness-architecture.md') },
-    @{ S = 'shared\meta-doc-critic.md'; D = (Join-Path $claudeHome 'meta-doc-critic.md') },
+    @{ S = 'shared\harness-review.md'; D = (Join-Path $claudeHome 'harness-review.md') },
     @{ S = 'claude\commands\frontend-design.md'; D = (Join-Path $claudeHome 'commands\frontend-design.md') },
     @{ S = 'shared\vendor\anthropics\frontend-design\LICENSE.txt'; D = (Join-Path $claudeHome 'commands\frontend-design.LICENSE.txt') },
     @{ S = 'codex\AGENTS.md'; D = (Join-Path $codexHome 'AGENTS.md') },
@@ -95,21 +96,19 @@ $fileLinks = @(
     @{ S = 'shared\skill-authoring.md'; D = (Join-Path $codexHome 'skill-authoring.md') },
     @{ S = 'shared\agent-authoring.md'; D = (Join-Path $codexHome 'agent-authoring.md') },
     @{ S = 'shared\self-harness-architecture.md'; D = (Join-Path $codexHome 'self-harness-architecture.md') },
-    @{ S = 'shared\meta-doc-critic.md'; D = (Join-Path $codexHome 'meta-doc-critic.md') },
+    @{ S = 'shared\harness-review.md'; D = (Join-Path $codexHome 'harness-review.md') },
     @{ S = 'codex\harness-components.md'; D = (Join-Path $codexHome 'harness-components.md') },
-    @{ S = 'codex\agents\meta-doc-critic.toml'; D = (Join-Path $codexHome 'agents\meta-doc-critic.toml') }
+    @{ S = 'codex\agents\harness-reviewer.toml'; D = (Join-Path $codexHome 'agents\harness-reviewer.toml') }
 )
 
-foreach ($link in $fileLinks) {
-    $existing = Get-Item -Force -LiteralPath $link.D -ErrorAction SilentlyContinue
-    if ($existing -and $existing.LinkType -eq 'HardLink') {
-        Remove-Item -LiteralPath $link.D
-        Write-Host "hard link 교체: $($link.D)"
-    }
-}
-
-foreach ($link in $fileLinks) {
-    Install-Link -Source (Join-Path $RepoRoot $link.S) -Destination $link.D -Kind File
+$fileRequest = @{ repo = $RepoRoot; home = $UserHome; links = @($fileLinks) } | ConvertTo-Json -Depth 5
+$requestPath = [IO.Path]::GetTempFileName()
+try {
+    [IO.File]::WriteAllText($requestPath, $fileRequest, [Text.UTF8Encoding]::new($false))
+    & python (Join-Path $RepoRoot 'scripts/windows_file_links.py') --request $requestPath
+    if ($LASTEXITCODE -ne 0) { throw '파일 링크 또는 설치 상태 처리 실패' }
+} finally {
+    Remove-Item -LiteralPath $requestPath
 }
 
 $directoryLinks = @(
@@ -132,6 +131,31 @@ $directoryLinks += @{ S = 'codex\skills\self-improve'; D = Join-Path $agentsSkil
 
 foreach ($link in $directoryLinks) {
     Install-Link -Source (Join-Path $RepoRoot $link.S) -Destination $link.D -Kind Directory
+}
+
+# 새 경로를 검증한 뒤 이 저장소의 이전 관리 링크만 정리한다.
+$migrations = @(
+    @{ D = (Join-Path $claudeHome 'meta-doc-critic.md'); Old = 'shared\meta-doc-critic.md'; New = 'shared\harness-review.md'; Installed = (Join-Path $claudeHome 'harness-review.md') },
+    @{ D = (Join-Path $codexHome 'meta-doc-critic.md'); Old = 'shared\meta-doc-critic.md'; New = 'shared\harness-review.md'; Installed = (Join-Path $codexHome 'harness-review.md') },
+    @{ D = (Join-Path $codexHome 'agents\meta-doc-critic.toml'); Old = 'codex\agents\meta-doc-critic.toml'; New = 'codex\agents\harness-reviewer.toml'; Installed = (Join-Path $codexHome 'agents\harness-reviewer.toml') }
+)
+foreach ($migration in $migrations) {
+    if (-not (Test-LinkTarget $migration.Installed (Join-Path $RepoRoot $migration.New))) {
+        throw "새 관리 링크 검증 실패: $($migration.Installed)"
+    }
+}
+foreach ($migration in $migrations) {
+    $existing = Get-Item -Force -LiteralPath $migration.D -ErrorAction SilentlyContinue
+    if (-not $existing) { continue }
+    $managed = if ($existing.LinkType -eq 'HardLink') {
+        Test-LinkTarget $migration.D (Join-Path $RepoRoot $migration.New)
+    } elseif ($existing.LinkType -eq 'SymbolicLink') {
+        (Test-LinkTarget $migration.D (Join-Path $RepoRoot $migration.Old)) -or
+        (Test-LinkTarget $migration.D (Join-Path $RepoRoot $migration.New))
+    } else { $false }
+    if (-not $managed) { throw "이전 비관리 경로를 보존했습니다: $($migration.D)" }
+    Remove-Item -LiteralPath $migration.D
+    Write-Host "이전 관리 링크 제거: $($migration.D)"
 }
 
 Write-Host "설치 완료: $RepoRoot"

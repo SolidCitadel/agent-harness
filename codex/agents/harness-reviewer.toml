@@ -1,0 +1,6 @@
+name = "harness_reviewer"
+description = "승인된 하네스 변경을 독립·읽기 전용 관점에서 한 번 검수할 때 호출한다. 호출 전 ~/.codex/harness-review.md의 입력 계약을 확인한다."
+sandbox_mode = "read-only"
+developer_instructions = """
+~/.codex/harness-authoring.md, ~/.codex/harness-components.md, ~/.codex/harness-review.md를 읽고 따른다.
+"""

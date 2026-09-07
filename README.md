@@ -5,7 +5,7 @@ Claude Code와 Codex의 개인 운영 지침과 재사용 workflow를 관리한�
 - `shared/skills/`: 직접 관리하는 플랫폼 공통 workflow
 - `shared/vendor/`: 수정하지 않는 외부 원본과 라이선스
 - `claude/`: Claude Code의 지침·rule·agent·hook. 수동 도구는 설치 시 `~/.claude/commands/`로 연결한다.
-- `codex/`: Codex의 지침·critic agent·플랫폼별 skill. 수동 skill은 암시 호출을 끈다.
+- `codex/`: Codex의 지침·하네스 검수 agent·플랫폼별 skill. 수동 skill은 암시 호출을 끈다.
 - `scripts/`: 제품의 고정 discovery 경로에 선택적 링크를 설치하고 검증하는 스크립트
 
 `~/.claude`와 `~/.codex` 전체를 관리하지 않는다. 인증, 세션, 캐시, 플러그인 및 제품이 쓰는 가변 상태는 각 제품 경로에 남긴다.
@@ -23,7 +23,9 @@ PowerShell에서 실행한다.
 .\scripts\verify.ps1
 ```
 
-Windows에서는 디렉터리를 junction으로 연결한다. 파일 symbolic link 권한이 없으면 같은 볼륨의 hard link를 사용하므로, pull이나 checkout 뒤 installer와 verifier를 다시 실행해 연결을 확인한다.
+Windows에서는 디렉터리를 junction으로 연결한다. 파일 symbolic link 권한이 없으면 같은 볼륨의 hard link를 사용하므로, pull이나 checkout 뒤 installer와 verifier를 다시 실행해 연결을 확인한다. 파일 링크의 원본·설치 경로와 볼륨·파일 식별자는 `~/.codex/agent-harness-install-state.json`, `~/.claude/agent-harness-install-state.json`에 기록한다. 원본이 교체되어도 설치 파일이 기록된 파일과 같으면 다시 연결한다.
+
+기록이 없는 기존 설치는 현재 원본과의 연결을 확인할 수 있을 때 등록한다. 소유 확인 실패나 상태 파일 손상 시 파일을 보존하고 중단한다. 이미 원본과 분리된 미등록 hard link는 자동 복구하지 않는다. 상태 기록에 실패하면 설치가 완료되지 않은 것으로 보고하며, 원인을 해결한 뒤 installer와 verifier를 다시 실행한다.
 
 ### Linux
 

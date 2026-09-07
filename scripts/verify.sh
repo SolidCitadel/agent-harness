@@ -60,7 +60,7 @@ assert_link "$claude_home/skill-authoring.md" "$repo_root/shared/skill-authoring
 assert_link "$claude_home/agent-authoring.md" "$repo_root/shared/agent-authoring.md"
 assert_link "$claude_home/self-harness-architecture.md" "$repo_root/shared/self-harness-architecture.md"
 assert_path_absent "$claude_home/self-harness-engineering.md"
-assert_link "$claude_home/meta-doc-critic.md" "$repo_root/shared/meta-doc-critic.md"
+assert_link "$claude_home/harness-review.md" "$repo_root/shared/harness-review.md"
 assert_link "$claude_home/rules" "$repo_root/claude/rules"
 assert_link "$claude_home/agents" "$repo_root/claude/agents"
 assert_link "$claude_home/hooks" "$repo_root/claude/hooks"
@@ -72,10 +72,10 @@ assert_link "$codex_home/harness-authoring.md" "$repo_root/shared/harness-author
 assert_link "$codex_home/skill-authoring.md" "$repo_root/shared/skill-authoring.md"
 assert_link "$codex_home/agent-authoring.md" "$repo_root/shared/agent-authoring.md"
 assert_link "$codex_home/self-harness-architecture.md" "$repo_root/shared/self-harness-architecture.md"
-assert_link "$codex_home/meta-doc-critic.md" "$repo_root/shared/meta-doc-critic.md"
+assert_link "$codex_home/harness-review.md" "$repo_root/shared/harness-review.md"
 assert_link "$codex_home/harness-components.md" "$repo_root/codex/harness-components.md"
 assert_path_absent "$codex_home/instruction-locations.md"
-assert_link "$codex_home/agents/meta-doc-critic.toml" "$repo_root/codex/agents/meta-doc-critic.toml"
+assert_link "$codex_home/agents/harness-reviewer.toml" "$repo_root/codex/agents/harness-reviewer.toml"
 
 shared_skills=(
   brain-storming
@@ -100,10 +100,10 @@ assert_link "$agents_skills/refine-harness" "$repo_root/shared/skills/refine-har
 assert_link "$claude_home/skills/self-improve" "$repo_root/claude/skills/self-improve"
 assert_link "$agents_skills/self-improve" "$repo_root/codex/skills/self-improve"
 
-critic="$repo_root/codex/agents/meta-doc-critic.toml"
+reviewer="$repo_root/codex/agents/harness-reviewer.toml"
 for key in name description developer_instructions; do
-  if ! grep -Eq "^${key}[[:space:]]*=" "$critic"; then
-    echo "critic agent 필드 누락: $key" >&2
+  if ! grep -Eq "^${key}[[:space:]]*=" "$reviewer"; then
+    echo "harness reviewer agent 필드 누락: $key" >&2
     exit 1
   fi
 done
@@ -193,5 +193,10 @@ if [[ "${implicit,,}" != 'false' || "${actual_skill_hash^^}" != "$expected_skill
   echo 'frontend-design 설치본 또는 호출 정책이 기록된 메타데이터와 다릅니다.' >&2
   exit 1
 fi
+
+assert_path_absent "$claude_home/meta-doc-critic.md"
+assert_path_absent "$codex_home/meta-doc-critic.md"
+assert_path_absent "$codex_home/agents/meta-doc-critic.toml"
+assert_path_absent "$claude_home/agents/meta-doc-critic.md"
 
 printf '검증 완료: symbolic link와 메타 파일 %d개가 유효합니다.\n' "$skill_count"
