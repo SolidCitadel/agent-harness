@@ -85,7 +85,8 @@ shared_skills=(
   review-pull-request
   structure-documentation
   ubuiquitous-language
-  port-harness-change
+  self-diagnose
+  integrate-context
 )
 
 for name in "${shared_skills[@]}"; do
@@ -97,8 +98,6 @@ assert_link "$agents_skills/frontend-design" "$repo_root/codex/skills/frontend-d
 assert_link "$claude_home/skills/refine-harness" "$repo_root/claude/skills/refine-harness"
 assert_link "$agents_skills/refine-harness" "$repo_root/shared/skills/refine-harness"
 
-assert_link "$claude_home/skills/self-improve" "$repo_root/claude/skills/self-improve"
-assert_link "$agents_skills/self-improve" "$repo_root/codex/skills/self-improve"
 
 reviewer="$repo_root/codex/agents/harness-reviewer.toml"
 for key in name description developer_instructions; do
@@ -176,7 +175,7 @@ for reference in '~/.codex/harness-authoring.md' '~/.codex/harness-components.md
 done
 
 read -r expected_skill_hash expected_license_hash implicit < <(
-  python -c 'import json,sys; d=json.load(open(sys.argv[1],encoding="utf-8"))["frontend-design"]; print(d["upstreamSkillSha256"],d["licenseSha256"],d["implicitInvocation"])' "$repo_root/shared/third-party-skills.json"
+  "$python_bin" -c 'import json,sys; d=json.load(open(sys.argv[1],encoding="utf-8"))["frontend-design"]; print(d["upstreamSkillSha256"],d["licenseSha256"],d["implicitInvocation"])' "$repo_root/shared/third-party-skills.json"
 )
 normalized_hash() { tr -d '\r' < "$1" | sha256sum | cut -d ' ' -f 1; }
 actual_skill_hash="$(normalized_hash "$repo_root/shared/vendor/anthropics/frontend-design/SKILL.md")"
@@ -198,5 +197,10 @@ assert_path_absent "$claude_home/meta-doc-critic.md"
 assert_path_absent "$codex_home/meta-doc-critic.md"
 assert_path_absent "$codex_home/agents/meta-doc-critic.toml"
 assert_path_absent "$claude_home/agents/meta-doc-critic.md"
+
+for name in self-improve port-harness-change; do
+  assert_path_absent "$claude_home/skills/$name"
+  assert_path_absent "$agents_skills/$name"
+done
 
 printf '검증 완료: symbolic link와 메타 파일 %d개가 유효합니다.\n' "$skill_count"

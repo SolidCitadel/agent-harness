@@ -13,8 +13,8 @@
 | `shared/skill-authoring.md`, `shared/agent-authoring.md` | 해당 유형을 다룰 때 읽는 공통 전문 지식 |
 | `codex/harness-components.md` | Codex 구성물의 선택·위치와 유형별 작성 규율 라우팅 |
 | `claude/rules/harness-authoring.md` | Claude Code의 구성물 유형과 전역·프로젝트 위치 |
-| 플랫폼별 `self-improve` | 관찰된 실패의 원인 교정 |
-| `shared/skills/refine-harness` | 기존 동작을 보존하며 하네스 비용을 줄이는 절차 |
+| `shared/skills/self-diagnose` | 기대와 실제 수행의 어긋남을 진단하고 현재 교정·재발 방지안을 결정 |
+| `shared/skills/integrate-context` | 새 맥락의 기록 필요성과 정본을 판단하고 지속적으로 반영 |
+| `shared/skills/refine-harness` | 누적된 하네스의 개별 판단과 구조를 사용자와 함께 정제 |
 | `shared/harness-review.md` | 호출자가 제공할 입력과 하네스 검수자의 범위·권한·출력 |
 | `codex/agents/harness-reviewer.toml`, `claude/agents/harness-reviewer.md` | 하네스 검수 역할의 플랫폼별 실행 설정과 공통 계약 연결 |
-| `shared/skills/port-harness-change` | 확인된 플랫폼 변경의 선택적 포팅 |

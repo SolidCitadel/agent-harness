@@ -117,7 +117,7 @@ $directoryLinks = @(
     @{ S = 'claude\hooks'; D = (Join-Path $claudeHome 'hooks') }
 )
 
-$sharedSkills = @('brain-storming', 'grill-me', 'improve-code-base-architecture', 'interface-design', 'review-pull-request', 'structure-documentation', 'ubuiquitous-language', 'port-harness-change')
+$sharedSkills = @('brain-storming', 'grill-me', 'improve-code-base-architecture', 'interface-design', 'review-pull-request', 'structure-documentation', 'ubuiquitous-language', 'self-diagnose', 'integrate-context')
 foreach ($name in $sharedSkills) {
     $directoryLinks += @{ S = "shared\skills\$name"; D = Join-Path $claudeHome "skills\$name" }
     $directoryLinks += @{ S = "shared\skills\$name"; D = Join-Path $agentsSkills $name }
@@ -126,8 +126,6 @@ foreach ($name in $sharedSkills) {
 $directoryLinks += @{ S = 'codex\skills\frontend-design'; D = Join-Path $agentsSkills 'frontend-design' }
 $directoryLinks += @{ S = 'claude\skills\refine-harness'; D = Join-Path $claudeHome 'skills\refine-harness' }
 $directoryLinks += @{ S = 'shared\skills\refine-harness'; D = Join-Path $agentsSkills 'refine-harness' }
-$directoryLinks += @{ S = 'claude\skills\self-improve'; D = Join-Path $claudeHome 'skills\self-improve' }
-$directoryLinks += @{ S = 'codex\skills\self-improve'; D = Join-Path $agentsSkills 'self-improve' }
 
 foreach ($link in $directoryLinks) {
     Install-Link -Source (Join-Path $RepoRoot $link.S) -Destination $link.D -Kind Directory
@@ -156,6 +154,32 @@ foreach ($migration in $migrations) {
     if (-not $managed) { throw "이전 비관리 경로를 보존했습니다: $($migration.D)" }
     Remove-Item -LiteralPath $migration.D
     Write-Host "이전 관리 링크 제거: $($migration.D)"
+}
+
+# 새 skill 연결을 확인한 뒤 기존 디렉터리 링크만 제거한다.
+foreach ($name in @('self-diagnose', 'integrate-context')) {
+    foreach ($destination in @((Join-Path $claudeHome "skills\$name"), (Join-Path $agentsSkills $name))) {
+        if (-not (Test-LinkTarget $destination (Join-Path $RepoRoot "shared\skills\$name"))) {
+            throw "새 skill 링크 검증 실패: $destination"
+        }
+    }
+}
+$previousSkills = @(
+    @{ D = (Join-Path $claudeHome 'skills\self-improve'); S = 'claude\skills\self-improve' },
+    @{ D = (Join-Path $agentsSkills 'self-improve'); S = 'codex\skills\self-improve' },
+    @{ D = (Join-Path $claudeHome 'skills\port-harness-change'); S = 'shared\skills\port-harness-change' },
+    @{ D = (Join-Path $agentsSkills 'port-harness-change'); S = 'shared\skills\port-harness-change' }
+)
+foreach ($previous in $previousSkills) {
+    $existing = Get-Item -Force -LiteralPath $previous.D -ErrorAction SilentlyContinue
+    if (-not $existing) { continue }
+    if ($existing.LinkType -notin @('Junction', 'SymbolicLink') -or
+        -not (Test-LinkTarget $previous.D (Join-Path $RepoRoot $previous.S))) {
+        throw "이전 비관리 skill 경로를 보존했습니다: $($previous.D)"
+    }
+    # 재귀 삭제 없이 디렉터리 reparse point 자체만 제거한다.
+    [IO.Directory]::Delete($previous.D)
+    Write-Host "이전 관리 skill 링크 제거: $($previous.D)"
 }
 
 Write-Host "설치 완료: $RepoRoot"

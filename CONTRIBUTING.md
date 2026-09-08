@@ -5,7 +5,7 @@
 - 플랫폼과 무관한 전역 지침·하네스 작성 규율·구조 의미와 직접 관리하는 workflow는 `shared/`에 둔다.
 - 외부 배포물은 `shared/vendor/`에 원본 그대로 두고 출처·버전·해시는 `shared/third-party-skills.json`에서 관리한다.
 - Claude Code와 Codex의 discovery 경로, agent 형식, hook, 권한 체계에 묶인 구현은 각 플랫폼 디렉터리에 둔다.
-- 한 플랫폼에서 확인한 변경은 반대편에 같은 실패 원인이 존재할 때만 포팅한다.
+- 플랫폼 전용 변경은 해당 플랫폼에서 완결한다. 반대 플랫폼은 관련 문제나 정제 작업이 생겼을 때 기존 커밋의 원인·변경 이유·검증 범위를 참고해 적용 필요성을 판단한다. 공통 정본은 연결된 플랫폼에 반영하고, 실제 효과를 확인한 범위는 구분해 기록한다.
 - `shared/global-instructions.md`는 공통 전역 섹션을 소유하고 플랫폼별 template은 섹션 배치와 전용 지침을 소유한다. `codex/AGENTS.md`와 `claude/CLAUDE.md`는 생성물이므로 직접 고치지 않는다.
 
 ## 검증
