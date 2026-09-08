@@ -81,7 +81,7 @@ shared_skills=(
   interface-design
   review-pull-request
   structure-documentation
-  ubuiquitous-language
+  ubiquitous-language
   self-diagnose
   integrate-context
 )
@@ -123,7 +123,7 @@ remove_previous_link "$codex_home/meta-doc-critic.md" "$repo_root/shared/meta-do
 remove_previous_link "$codex_home/agents/meta-doc-critic.toml" "$repo_root/codex/agents/meta-doc-critic.toml" "$repo_root/codex/agents/harness-reviewer.toml" "$codex_home/agents/harness-reviewer.toml"
 
 # 새 skill 연결을 확인한 뒤 이전 symbolic link 자체만 제거한다.
-for name in self-diagnose integrate-context; do
+for name in self-diagnose integrate-context ubiquitous-language; do
   for destination in "$claude_home/skills/$name" "$agents_skills/$name"; do
     [[ -L "$destination" && "$(readlink -f -- "$destination")" == "$repo_root/shared/skills/$name" ]] || {
       echo "새 skill 링크 검증 실패: $destination" >&2; exit 1;
@@ -145,6 +145,8 @@ remove_previous_skill() {
   echo "이전 비관리 skill 경로를 보존했습니다: $destination" >&2
   exit 1
 }
+remove_previous_skill "$claude_home/skills/ubuiquitous-language" "$repo_root/shared/skills/ubuiquitous-language"
+remove_previous_skill "$agents_skills/ubuiquitous-language" "$repo_root/shared/skills/ubuiquitous-language"
 remove_previous_skill "$claude_home/skills/self-improve" "$repo_root/claude/skills/self-improve"
 remove_previous_skill "$agents_skills/self-improve" "$repo_root/codex/skills/self-improve"
 remove_previous_skill "$claude_home/skills/port-harness-change" "$repo_root/shared/skills/port-harness-change"

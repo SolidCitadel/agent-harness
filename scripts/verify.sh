@@ -84,7 +84,7 @@ shared_skills=(
   interface-design
   review-pull-request
   structure-documentation
-  ubuiquitous-language
+  ubiquitous-language
   self-diagnose
   integrate-context
 )
@@ -198,7 +198,7 @@ assert_path_absent "$codex_home/meta-doc-critic.md"
 assert_path_absent "$codex_home/agents/meta-doc-critic.toml"
 assert_path_absent "$claude_home/agents/meta-doc-critic.md"
 
-for name in self-improve port-harness-change; do
+for name in self-improve port-harness-change ubuiquitous-language; do
   assert_path_absent "$claude_home/skills/$name"
   assert_path_absent "$agents_skills/$name"
 done

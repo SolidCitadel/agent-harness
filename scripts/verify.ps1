@@ -83,7 +83,7 @@ Assert-Link (Join-Path $codexHome 'harness-components.md') (Join-Path $RepoRoot 
 Assert-PathAbsent (Join-Path $codexHome 'instruction-locations.md')
 Assert-Link (Join-Path $codexHome 'agents\harness-reviewer.toml') (Join-Path $RepoRoot 'codex\agents\harness-reviewer.toml')
 
-$skills = @('brain-storming', 'grill-me', 'improve-code-base-architecture', 'interface-design', 'review-pull-request', 'structure-documentation', 'ubuiquitous-language', 'self-diagnose', 'integrate-context')
+$skills = @('brain-storming', 'grill-me', 'improve-code-base-architecture', 'interface-design', 'review-pull-request', 'structure-documentation', 'ubiquitous-language', 'self-diagnose', 'integrate-context')
 foreach ($name in $skills) {
     Assert-Link (Join-Path $claudeHome "skills\$name") (Join-Path $RepoRoot "shared\skills\$name")
     Assert-Link (Join-Path $agentsSkills $name) (Join-Path $RepoRoot "shared\skills\$name")
@@ -192,7 +192,7 @@ Assert-PathAbsent (Join-Path $codexHome 'meta-doc-critic.md')
 Assert-PathAbsent (Join-Path $codexHome 'agents\meta-doc-critic.toml')
 Assert-PathAbsent (Join-Path $claudeHome 'agents\meta-doc-critic.md')
 
-foreach ($name in @('self-improve', 'port-harness-change')) {
+foreach ($name in @('self-improve', 'port-harness-change', 'ubuiquitous-language')) {
     Assert-PathAbsent (Join-Path $claudeHome "skills\$name")
     Assert-PathAbsent (Join-Path $agentsSkills $name)
 }

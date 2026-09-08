@@ -117,7 +117,7 @@ $directoryLinks = @(
     @{ S = 'claude\hooks'; D = (Join-Path $claudeHome 'hooks') }
 )
 
-$sharedSkills = @('brain-storming', 'grill-me', 'improve-code-base-architecture', 'interface-design', 'review-pull-request', 'structure-documentation', 'ubuiquitous-language', 'self-diagnose', 'integrate-context')
+$sharedSkills = @('brain-storming', 'grill-me', 'improve-code-base-architecture', 'interface-design', 'review-pull-request', 'structure-documentation', 'ubiquitous-language', 'self-diagnose', 'integrate-context')
 foreach ($name in $sharedSkills) {
     $directoryLinks += @{ S = "shared\skills\$name"; D = Join-Path $claudeHome "skills\$name" }
     $directoryLinks += @{ S = "shared\skills\$name"; D = Join-Path $agentsSkills $name }
@@ -157,7 +157,7 @@ foreach ($migration in $migrations) {
 }
 
 # 새 skill 연결을 확인한 뒤 기존 디렉터리 링크만 제거한다.
-foreach ($name in @('self-diagnose', 'integrate-context')) {
+foreach ($name in @('self-diagnose', 'integrate-context', 'ubiquitous-language')) {
     foreach ($destination in @((Join-Path $claudeHome "skills\$name"), (Join-Path $agentsSkills $name))) {
         if (-not (Test-LinkTarget $destination (Join-Path $RepoRoot "shared\skills\$name"))) {
             throw "새 skill 링크 검증 실패: $destination"
@@ -165,6 +165,8 @@ foreach ($name in @('self-diagnose', 'integrate-context')) {
     }
 }
 $previousSkills = @(
+    @{ D = (Join-Path $claudeHome 'skills\ubuiquitous-language'); S = 'shared\skills\ubuiquitous-language' },
+    @{ D = (Join-Path $agentsSkills 'ubuiquitous-language'); S = 'shared\skills\ubuiquitous-language' },
     @{ D = (Join-Path $claudeHome 'skills\self-improve'); S = 'claude\skills\self-improve' },
     @{ D = (Join-Path $agentsSkills 'self-improve'); S = 'codex\skills\self-improve' },
     @{ D = (Join-Path $claudeHome 'skills\port-harness-change'); S = 'shared\skills\port-harness-change' },
