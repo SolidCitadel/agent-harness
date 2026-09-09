@@ -2,6 +2,8 @@
 
 {{shared:판단}}
 
+{{shared:수행}}
+
 {{shared:변경}}
 
 {{shared:저작}}
