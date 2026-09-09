@@ -76,6 +76,7 @@ install_link "$repo_root/claude/hooks" "$claude_home/hooks"
 
 shared_skills=(
   brain-storming
+  create-pull-request
   grill-me
   improve-code-base-architecture
   interface-design

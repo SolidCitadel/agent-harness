@@ -79,6 +79,7 @@ assert_link "$codex_home/agents/harness-reviewer.toml" "$repo_root/codex/agents/
 
 shared_skills=(
   brain-storming
+  create-pull-request
   grill-me
   improve-code-base-architecture
   interface-design
