@@ -8,6 +8,10 @@
 
 하네스 구성물을 작성·수정·이동·삭제·검수할 때 `~/.codex/harness-authoring.md`와 `~/.codex/harness-components.md`에서 대상 유형의 규율을 읽는다.
 
+{{shared:수행/서브에이전트}}
+
+범위가 명확한 하위 작업에는 `gpt-6-luna`를 우선 사용하되, 판단 난도와 오류 비용에 맞춰 모델을 선택한다.
+
 {{shared:변경}}
 
 {{shared:저작}}

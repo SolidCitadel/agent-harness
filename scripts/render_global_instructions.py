@@ -23,14 +23,24 @@ def parse_sections(source: str) -> dict[str, str]:
         raise ValueError("shared/global-instructions.md의 제목이 올바르지 않습니다.")
 
     sections: dict[str, str] = {}
-    matches = list(re.finditer(r"(?m)^## ([^\n]+)\n", normalized))
+    matches = list(re.finditer(r"(?m)^## ([^\n]+)(?:\n|$)", normalized))
     for index, match in enumerate(matches):
         name = match.group(1).strip()
         if name in sections:
             raise ValueError(f"공통 전역 지침의 섹션이 중복됩니다: {name}")
         end = matches[index + 1].start() if index + 1 < len(matches) else len(normalized)
-        body = normalized[match.end():end].strip()
-        sections[name] = f"## {name}\n\n{body}" if body else f"## {name}"
+        body = normalized[match.end():end]
+        subsections = list(re.finditer(r"(?m)^### ([^\n]+)(?:\n|$)", body))
+        parent_body = body[:subsections[0].start()].strip() if subsections else body.strip()
+        sections[name] = f"## {name}\n\n{parent_body}" if parent_body else f"## {name}"
+        for child_index, child in enumerate(subsections):
+            child_name = child.group(1).strip()
+            key = f"{name}/{child_name}"
+            if key in sections:
+                raise ValueError(f"공통 전역 지침의 하위 섹션이 중복됩니다: {key}")
+            child_end = subsections[child_index + 1].start() if child_index + 1 < len(subsections) else len(body)
+            child_body = body[child.end():child_end].strip()
+            sections[key] = f"### {child_name}\n\n{child_body}" if child_body else f"### {child_name}"
 
     if not sections:
         raise ValueError("shared/global-instructions.md에 공통 섹션이 없습니다.")
@@ -49,6 +59,20 @@ def rendered(template: str, sections: dict[str, str], template_path: Path) -> st
         raise ValueError(f"{template_path}에서 누락된 공통 섹션: {', '.join(missing)}")
     if repeated:
         raise ValueError(f"{template_path}에서 중복된 공통 섹션: {', '.join(repeated)}")
+
+    for name in sections:
+        if "/" not in name:
+            continue
+        parent = name.split("/", 1)[0]
+        parent_token = f"{{{{shared:{parent}}}}}"
+        child_token = f"{{{{shared:{name}}}}}"
+        parent_at = normalized.index(parent_token)
+        child_at = normalized.index(child_token)
+        between = normalized[parent_at + len(parent_token):child_at]
+        if parent_at >= child_at or re.search(r"(?m)^## ", between) or any(
+            "/" not in other for other in TOKEN.findall(between)
+        ):
+            raise ValueError(f"{template_path}의 하위 섹션이 부모 섹션 밖에 있습니다: {name}")
 
     return TOKEN.sub(lambda match: sections[match.group(1)], normalized).rstrip() + "\n"
 
