@@ -59,6 +59,7 @@ install_link "$repo_root/shared/skill-authoring.md" "$claude_home/skill-authorin
 install_link "$repo_root/shared/agent-authoring.md" "$claude_home/agent-authoring.md"
 install_link "$repo_root/shared/self-harness-architecture.md" "$claude_home/self-harness-architecture.md"
 install_link "$repo_root/shared/harness-review.md" "$claude_home/harness-review.md"
+install_link "$repo_root/shared/self-diagnosis.md" "$claude_home/self-diagnosis.md"
 install_link "$repo_root/claude/commands/frontend-design.md" "$claude_home/commands/frontend-design.md"
 install_link "$repo_root/shared/vendor/anthropics/frontend-design/LICENSE.txt" "$claude_home/commands/frontend-design.LICENSE.txt"
 install_link "$repo_root/codex/AGENTS.md" "$codex_home/AGENTS.md"
@@ -67,12 +68,42 @@ install_link "$repo_root/shared/skill-authoring.md" "$codex_home/skill-authoring
 install_link "$repo_root/shared/agent-authoring.md" "$codex_home/agent-authoring.md"
 install_link "$repo_root/shared/self-harness-architecture.md" "$codex_home/self-harness-architecture.md"
 install_link "$repo_root/shared/harness-review.md" "$codex_home/harness-review.md"
+install_link "$repo_root/shared/self-diagnosis.md" "$codex_home/self-diagnosis.md"
 install_link "$repo_root/codex/harness-components.md" "$codex_home/harness-components.md"
 install_link "$repo_root/codex/agents/harness-reviewer.toml" "$codex_home/agents/harness-reviewer.toml"
 
 install_link "$repo_root/claude/rules" "$claude_home/rules"
 install_link "$repo_root/claude/agents" "$claude_home/agents"
 install_link "$repo_root/claude/hooks" "$claude_home/hooks"
+
+remove_previous_skill() {
+  local destination expected target
+  destination="$1"; expected="$2"
+  [[ -e "$destination" || -L "$destination" ]] || return 0
+  if [[ -L "$destination" ]]; then
+    target="$(readlink -- "$destination")"
+    [[ "$target" = /* ]] || target="$(dirname -- "$destination")/$target"
+    if [[ "$(realpath -m -s -- "$target")" == "$expected" ]]; then
+      rm -- "$destination"
+      return
+    fi
+  fi
+  echo "이전 비관리 skill 경로를 보존했습니다: $destination" >&2
+  exit 1
+}
+
+# 같은 이름의 플랫폼별 skill로 바뀐 이전 shared skill 링크만 먼저 제거하고, 그 밖의 경로는 install_link가 판정한다.
+for destination in "$claude_home/skills/self-diagnose" "$agents_skills/self-diagnose"; do
+  [[ -L "$destination" ]] || continue
+  target="$(readlink -- "$destination")"
+  [[ "$target" = /* ]] || target="$(dirname -- "$destination")/$target"
+  if [[ "$(realpath -m -s -- "$target")" == "$repo_root/shared/skills/self-diagnose" ]]; then
+    rm -- "$destination"
+    printf '이전 관리 skill 링크 제거: %s\n' "$destination"
+  fi
+done
+install_link "$repo_root/claude/skills/self-diagnose" "$claude_home/skills/self-diagnose"
+install_link "$repo_root/codex/skills/self-diagnose" "$agents_skills/self-diagnose"
 
 shared_skills=(
   brain-storming
@@ -83,7 +114,6 @@ shared_skills=(
   review-pull-request
   structure-documentation
   ubiquitous-language
-  self-diagnose
   integrate-context
 )
 
@@ -124,28 +154,13 @@ remove_previous_link "$codex_home/meta-doc-critic.md" "$repo_root/shared/meta-do
 remove_previous_link "$codex_home/agents/meta-doc-critic.toml" "$repo_root/codex/agents/meta-doc-critic.toml" "$repo_root/codex/agents/harness-reviewer.toml" "$codex_home/agents/harness-reviewer.toml"
 
 # 새 skill 연결을 확인한 뒤 이전 symbolic link 자체만 제거한다.
-for name in self-diagnose integrate-context ubiquitous-language; do
+for name in integrate-context ubiquitous-language; do
   for destination in "$claude_home/skills/$name" "$agents_skills/$name"; do
     [[ -L "$destination" && "$(readlink -f -- "$destination")" == "$repo_root/shared/skills/$name" ]] || {
       echo "새 skill 링크 검증 실패: $destination" >&2; exit 1;
     }
   done
 done
-remove_previous_skill() {
-  local destination expected target
-  destination="$1"; expected="$2"
-  [[ -e "$destination" || -L "$destination" ]] || return 0
-  if [[ -L "$destination" ]]; then
-    target="$(readlink -- "$destination")"
-    [[ "$target" = /* ]] || target="$(dirname -- "$destination")/$target"
-    if [[ "$(realpath -m -s -- "$target")" == "$expected" ]]; then
-      rm -- "$destination"
-      return
-    fi
-  fi
-  echo "이전 비관리 skill 경로를 보존했습니다: $destination" >&2
-  exit 1
-}
 remove_previous_skill "$claude_home/skills/ubuiquitous-language" "$repo_root/shared/skills/ubuiquitous-language"
 remove_previous_skill "$agents_skills/ubuiquitous-language" "$repo_root/shared/skills/ubuiquitous-language"
 remove_previous_skill "$claude_home/skills/self-improve" "$repo_root/claude/skills/self-improve"

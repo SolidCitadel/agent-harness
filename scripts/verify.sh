@@ -61,6 +61,7 @@ assert_link "$claude_home/agent-authoring.md" "$repo_root/shared/agent-authoring
 assert_link "$claude_home/self-harness-architecture.md" "$repo_root/shared/self-harness-architecture.md"
 assert_path_absent "$claude_home/self-harness-engineering.md"
 assert_link "$claude_home/harness-review.md" "$repo_root/shared/harness-review.md"
+assert_link "$claude_home/self-diagnosis.md" "$repo_root/shared/self-diagnosis.md"
 assert_link "$claude_home/rules" "$repo_root/claude/rules"
 assert_link "$claude_home/agents" "$repo_root/claude/agents"
 assert_link "$claude_home/hooks" "$repo_root/claude/hooks"
@@ -73,6 +74,7 @@ assert_link "$codex_home/skill-authoring.md" "$repo_root/shared/skill-authoring.
 assert_link "$codex_home/agent-authoring.md" "$repo_root/shared/agent-authoring.md"
 assert_link "$codex_home/self-harness-architecture.md" "$repo_root/shared/self-harness-architecture.md"
 assert_link "$codex_home/harness-review.md" "$repo_root/shared/harness-review.md"
+assert_link "$codex_home/self-diagnosis.md" "$repo_root/shared/self-diagnosis.md"
 assert_link "$codex_home/harness-components.md" "$repo_root/codex/harness-components.md"
 assert_path_absent "$codex_home/instruction-locations.md"
 assert_link "$codex_home/agents/harness-reviewer.toml" "$repo_root/codex/agents/harness-reviewer.toml"
@@ -86,7 +88,6 @@ shared_skills=(
   review-pull-request
   structure-documentation
   ubiquitous-language
-  self-diagnose
   integrate-context
 )
 
@@ -98,6 +99,8 @@ done
 assert_link "$agents_skills/frontend-design" "$repo_root/codex/skills/frontend-design"
 assert_link "$claude_home/skills/refine-harness" "$repo_root/claude/skills/refine-harness"
 assert_link "$agents_skills/refine-harness" "$repo_root/shared/skills/refine-harness"
+assert_link "$claude_home/skills/self-diagnose" "$repo_root/claude/skills/self-diagnose"
+assert_link "$agents_skills/self-diagnose" "$repo_root/codex/skills/self-diagnose"
 
 
 reviewer="$repo_root/codex/agents/harness-reviewer.toml"
