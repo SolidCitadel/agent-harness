@@ -67,6 +67,7 @@ Assert-Link (Join-Path $claudeHome 'agent-authoring.md') (Join-Path $RepoRoot 's
 Assert-Link (Join-Path $claudeHome 'self-harness-architecture.md') (Join-Path $RepoRoot 'shared\self-harness-architecture.md')
 Assert-PathAbsent (Join-Path $claudeHome 'self-harness-engineering.md')
 Assert-Link (Join-Path $claudeHome 'harness-review.md') (Join-Path $RepoRoot 'shared\harness-review.md')
+Assert-Link (Join-Path $claudeHome 'self-diagnosis.md') (Join-Path $RepoRoot 'shared\self-diagnosis.md')
 Assert-Link (Join-Path $claudeHome 'rules') (Join-Path $RepoRoot 'claude\rules')
 Assert-Link (Join-Path $claudeHome 'agents') (Join-Path $RepoRoot 'claude\agents')
 Assert-Link (Join-Path $claudeHome 'hooks') (Join-Path $RepoRoot 'claude\hooks')
@@ -79,11 +80,12 @@ Assert-Link (Join-Path $codexHome 'skill-authoring.md') (Join-Path $RepoRoot 'sh
 Assert-Link (Join-Path $codexHome 'agent-authoring.md') (Join-Path $RepoRoot 'shared\agent-authoring.md')
 Assert-Link (Join-Path $codexHome 'self-harness-architecture.md') (Join-Path $RepoRoot 'shared\self-harness-architecture.md')
 Assert-Link (Join-Path $codexHome 'harness-review.md') (Join-Path $RepoRoot 'shared\harness-review.md')
+Assert-Link (Join-Path $codexHome 'self-diagnosis.md') (Join-Path $RepoRoot 'shared\self-diagnosis.md')
 Assert-Link (Join-Path $codexHome 'harness-components.md') (Join-Path $RepoRoot 'codex\harness-components.md')
 Assert-PathAbsent (Join-Path $codexHome 'instruction-locations.md')
 Assert-Link (Join-Path $codexHome 'agents\harness-reviewer.toml') (Join-Path $RepoRoot 'codex\agents\harness-reviewer.toml')
 
-$skills = @('brain-storming', 'create-pull-request', 'grill-me', 'improve-code-base-architecture', 'interface-design', 'review-pull-request', 'structure-documentation', 'ubiquitous-language', 'self-diagnose', 'integrate-context')
+$skills = @('brain-storming', 'create-pull-request', 'grill-me', 'improve-code-base-architecture', 'interface-design', 'review-pull-request', 'structure-documentation', 'ubiquitous-language', 'integrate-context')
 foreach ($name in $skills) {
     Assert-Link (Join-Path $claudeHome "skills\$name") (Join-Path $RepoRoot "shared\skills\$name")
     Assert-Link (Join-Path $agentsSkills $name) (Join-Path $RepoRoot "shared\skills\$name")
@@ -91,6 +93,8 @@ foreach ($name in $skills) {
 Assert-Link (Join-Path $agentsSkills 'frontend-design') (Join-Path $RepoRoot 'codex\skills\frontend-design')
 Assert-Link (Join-Path $claudeHome 'skills\refine-harness') (Join-Path $RepoRoot 'claude\skills\refine-harness')
 Assert-Link (Join-Path $agentsSkills 'refine-harness') (Join-Path $RepoRoot 'shared\skills\refine-harness')
+Assert-Link (Join-Path $claudeHome 'skills\self-diagnose') (Join-Path $RepoRoot 'claude\skills\self-diagnose')
+Assert-Link (Join-Path $agentsSkills 'self-diagnose') (Join-Path $RepoRoot 'codex\skills\self-diagnose')
 
 & python -c "import pathlib,sys,tomllib; tomllib.loads(pathlib.Path(sys.argv[1]).read_text(encoding='utf-8'))" (Join-Path $RepoRoot 'codex\agents\harness-reviewer.toml')
 if ($LASTEXITCODE -ne 0) { throw 'Codex harness reviewer agent TOML 검증 실패' }
