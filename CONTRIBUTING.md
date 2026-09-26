@@ -15,6 +15,7 @@
 - 공통 링크 명세나 저장소 구조를 바꾸면 두 플랫폼 구현을 함께 검증한다.
 - 플랫폼별 동작은 해당 플랫폼의 실제 파일·링크 상태로 판정한다.
 - `scripts/render_platform_files.py --check`로 플랫폼 문구와 원본 빈칸의 정합성, 생성물 drift와 잔여 파일을 확인한다.
+- Claude Code(`.claude/settings.json`)와 Codex(`.codex/hooks.json`)의 파일 수정 후 hook이 렌더러를 실행하고, `.githooks/pre-commit`이 drift가 남은 커밋을 거부한다. 설치기가 이 저장소의 `core.hooksPath`를 `.githooks`로 설정하므로, 설치기가 `core.hooksPath`를 설정하기 전(미실행 또는 기존 git hook 보존으로 중단)에는 커밋 전 검사가 동작하지 않는다. Codex는 프로젝트 hook을 사용자가 신뢰 승인해야 실행하고, hook 정의(이벤트·matcher·명령)가 바뀌면 다시 승인받는다.
 
 ## 커밋
 

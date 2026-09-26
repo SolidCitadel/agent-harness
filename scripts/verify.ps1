@@ -59,6 +59,18 @@ $agentsSkills = Join-Path $UserHome '.agents\skills'
 
 & python (Join-Path $RepoRoot 'scripts\render_platform_files.py') --check
 if ($LASTEXITCODE -ne 0) { throw '플랫폼 생성물 drift' }
+$gitTop = $null
+if (Get-Command git -ErrorAction SilentlyContinue) {
+    # Windows PowerShell 5.1은 Stop 상태에서 네이티브 명령의 stderr를 종료 오류로 바꾸므로 잠시 완화한다.
+    $previousPreference = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    $gitTop = & git -C $RepoRoot rev-parse --show-toplevel 2>$null
+    $ErrorActionPreference = $previousPreference
+}
+$isRepoRoot = $gitTop -and ([IO.Path]::GetFullPath($gitTop).TrimEnd('\') -eq $RepoRoot.TrimEnd('\'))
+if ($isRepoRoot -and (& git -C $RepoRoot config --local --get core.hooksPath) -ne '.githooks') {
+    throw 'core.hooksPath가 .githooks가 아닙니다.'
+}
 
 Assert-Link (Join-Path $claudeHome 'CLAUDE.md') (Join-Path $RepoRoot 'claude\CLAUDE.md')
 Assert-Link (Join-Path $claudeHome 'harness-authoring.md') (Join-Path $RepoRoot 'shared\harness-authoring.md')

@@ -17,6 +17,39 @@ $agentsSkills = Join-Path $UserHome '.agents\skills'
 & python (Join-Path $RepoRoot 'scripts\render_platform_files.py')
 if ($LASTEXITCODE -ne 0) { throw '플랫폼 생성물 렌더링 실패' }
 
+# 저장소의 커밋 전 검사를 쓰도록 이 저장소의 git hook 경로만 설정한다. 다른 값이 있으면 보존하고 중단한다.
+$gitTop = $null
+if (Get-Command git -ErrorAction SilentlyContinue) {
+    # Windows PowerShell 5.1은 Stop 상태에서 네이티브 명령의 stderr를 종료 오류로 바꾸므로 잠시 완화한다.
+    $previousPreference = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    $gitTop = & git -C $RepoRoot rev-parse --show-toplevel 2>$null
+    $ErrorActionPreference = $previousPreference
+}
+$isRepoRoot = $gitTop -and ([IO.Path]::GetFullPath($gitTop).TrimEnd('\') -eq $RepoRoot.TrimEnd('\'))
+if ($isRepoRoot) {
+    $hooksPath = & git -C $RepoRoot config --local --get core.hooksPath
+    if (-not $hooksPath) {
+        # 전역 hook 경로나 .git/hooks의 사용자 hook이 있으면 설정이 그것을 끄게 되므로 보존하고 중단한다.
+        $inherited = & git -C $RepoRoot config --get core.hooksPath
+        $defaultHooks = & git -C $RepoRoot rev-parse --git-path hooks
+        if (-not [IO.Path]::IsPathRooted($defaultHooks)) { $defaultHooks = Join-Path $RepoRoot $defaultHooks }
+        $customHooks = @(Get-ChildItem -File -LiteralPath $defaultHooks -ErrorAction SilentlyContinue |
+            Where-Object { $_.Extension -ne '.sample' } | ForEach-Object { $_.FullName })
+        if ($inherited -or $customHooks) {
+            throw ("기존 git hook이 있어 설치를 중단했습니다: " + ((@($inherited) + $customHooks | Where-Object { $_ }) -join ', ') +
+                ". 기존 hook을 .githooks로 옮기거나 연결한 뒤 git config --local core.hooksPath .githooks를 설정하고 설치기를 다시 실행하세요.")
+        }
+        & git -C $RepoRoot config --local core.hooksPath .githooks
+        if ($LASTEXITCODE -ne 0) { throw 'core.hooksPath 설정 실패' }
+        Write-Host '연결: core.hooksPath -> .githooks'
+    } elseif ($hooksPath -ne '.githooks') {
+        throw "기존 core.hooksPath가 관리 값과 다릅니다: $hooksPath"
+    }
+} else {
+    Write-Host 'git을 찾지 못했거나 저장소 루트가 git 작업 트리가 아니어서 core.hooksPath를 설정하지 않았습니다.'
+}
+
 foreach ($path in @($claudeHome, $codexHome, $agentsSkills)) {
     New-Item -ItemType Directory -Force -Path $path | Out-Null
 }

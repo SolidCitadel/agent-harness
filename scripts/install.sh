@@ -29,6 +29,32 @@ agents_skills="$user_home/.agents/skills"
 
 python_bin="$(command -v python3 || command -v python)"
 "$python_bin" "$repo_root/scripts/render_platform_files.py"
+
+# 저장소의 커밋 전 검사를 쓰도록 이 저장소의 git hook 경로만 설정한다. 다른 값이 있으면 보존하고 중단한다.
+git_top="$(git -C "$repo_root" rev-parse --show-toplevel 2>/dev/null || true)"
+if [[ -n "$git_top" && "$(realpath -m -- "$git_top")" == "$repo_root" ]]; then
+  hooks_path="$(git -C "$repo_root" config --local --get core.hooksPath || true)"
+  if [[ -z "$hooks_path" ]]; then
+    # 전역 hook 경로나 .git/hooks의 사용자 hook이 있으면 설정이 그것을 끄게 되므로 보존하고 중단한다.
+    inherited="$(git -C "$repo_root" config --get core.hooksPath || true)"
+    default_hooks="$(git -C "$repo_root" rev-parse --git-path hooks)"
+    [[ "$default_hooks" = /* ]] || default_hooks="$repo_root/$default_hooks"
+    custom_hooks="$(find "$default_hooks" -maxdepth 1 ! -type d ! -name '*.sample' -print 2>/dev/null || true)"
+    if [[ -n "$inherited" || -n "$custom_hooks" ]]; then
+      echo '기존 git hook이 있어 설치를 중단했습니다:' "$inherited" $custom_hooks >&2
+      echo '기존 hook을 .githooks로 옮기거나 연결한 뒤 git config --local core.hooksPath .githooks를 설정하고 설치기를 다시 실행하세요.' >&2
+      exit 1
+    fi
+    git -C "$repo_root" config --local core.hooksPath .githooks
+    echo '연결: core.hooksPath -> .githooks'
+  elif [[ "$hooks_path" != '.githooks' ]]; then
+    echo "기존 core.hooksPath가 관리 값과 다릅니다: $hooks_path" >&2
+    exit 1
+  fi
+else
+  echo 'git을 찾지 못했거나 저장소 루트가 git 작업 트리가 아니어서 core.hooksPath를 설정하지 않았습니다.'
+fi
+
 mkdir -p -- "$claude_home" "$codex_home" "$agents_skills"
 
 install_link() {

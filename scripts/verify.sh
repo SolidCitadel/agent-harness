@@ -29,6 +29,12 @@ agents_skills="$user_home/.agents/skills"
 
 python_bin="$(command -v python3 || command -v python)"
 "$python_bin" "$repo_root/scripts/render_platform_files.py" --check
+git_top="$(git -C "$repo_root" rev-parse --show-toplevel 2>/dev/null || true)"
+if [[ -n "$git_top" && "$(realpath -m -- "$git_top")" == "$repo_root" ]] \
+  && [[ "$(git -C "$repo_root" config --local --get core.hooksPath || true)" != '.githooks' ]]; then
+  echo 'core.hooksPath가 .githooks가 아닙니다.' >&2
+  exit 1
+fi
 
 assert_link() {
   local path expected actual
