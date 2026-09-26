@@ -6,9 +6,10 @@
 
 | 구성물 | 책임 |
 |---|---|
-| `shared/global-instructions.md` | 양 플랫폼 전역 지침의 공통 섹션 |
-| `codex/AGENTS.template.md`, `claude/CLAUDE.template.md` | 공통 섹션의 배치와 플랫폼 전용 전역 지침 |
-| `codex/AGENTS.md`, `claude/CLAUDE.md` | 플랫폼 템플릿에서 생성해 설치하는 전역 지침 |
+| `shared/global-instructions.md` | 양 플랫폼 전역 지침의 원본 |
+| `claude/platform-text.toml`, `codex/platform-text.toml` | 공통 원본의 플랫폼 빈칸에 들어갈 문구 |
+| `codex/AGENTS.md`, `claude/CLAUDE.md` | 공통 원본에서 생성해 설치하는 전역 지침 |
+| `claude/`·`codex/`의 `self-diagnosis.md`, `skills/integrate-context`, `skills/refine-harness` | 공통 원본에서 생성해 설치하는 플랫폼별 파일 |
 | `shared/harness-authoring.md` | 모든 하네스 구성물에 적용하는 플랫폼 중립 작성·개정 규율 |
 | `shared/skill-authoring.md`, `shared/agent-authoring.md` | 해당 유형을 다룰 때 읽는 공통 전문 지식 |
 | `codex/harness-components.md` | Codex 구성물의 선택·위치와 유형별 작성 규율 라우팅 |

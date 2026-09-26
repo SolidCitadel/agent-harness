@@ -14,8 +14,8 @@ $claudeHome = Join-Path $UserHome '.claude'
 $codexHome = Join-Path $UserHome '.codex'
 $agentsSkills = Join-Path $UserHome '.agents\skills'
 
-& python (Join-Path $RepoRoot 'scripts\render_global_instructions.py')
-if ($LASTEXITCODE -ne 0) { throw '공통 전역 지침 생성 실패' }
+& python (Join-Path $RepoRoot 'scripts\render_platform_files.py')
+if ($LASTEXITCODE -ne 0) { throw '플랫폼 생성물 렌더링 실패' }
 
 foreach ($path in @($claudeHome, $codexHome, $agentsSkills)) {
     New-Item -ItemType Directory -Force -Path $path | Out-Null
@@ -89,7 +89,7 @@ $fileLinks = @(
     @{ S = 'shared\agent-authoring.md'; D = (Join-Path $claudeHome 'agent-authoring.md') },
     @{ S = 'shared\self-harness-architecture.md'; D = (Join-Path $claudeHome 'self-harness-architecture.md') },
     @{ S = 'shared\harness-review.md'; D = (Join-Path $claudeHome 'harness-review.md') },
-    @{ S = 'shared\self-diagnosis.md'; D = (Join-Path $claudeHome 'self-diagnosis.md') },
+    @{ S = 'claude\self-diagnosis.md'; D = (Join-Path $claudeHome 'self-diagnosis.md'); O = 'shared\self-diagnosis.md' },
     @{ S = 'claude\commands\frontend-design.md'; D = (Join-Path $claudeHome 'commands\frontend-design.md') },
     @{ S = 'shared\vendor\anthropics\frontend-design\LICENSE.txt'; D = (Join-Path $claudeHome 'commands\frontend-design.LICENSE.txt') },
     @{ S = 'codex\AGENTS.md'; D = (Join-Path $codexHome 'AGENTS.md') },
@@ -98,7 +98,7 @@ $fileLinks = @(
     @{ S = 'shared\agent-authoring.md'; D = (Join-Path $codexHome 'agent-authoring.md') },
     @{ S = 'shared\self-harness-architecture.md'; D = (Join-Path $codexHome 'self-harness-architecture.md') },
     @{ S = 'shared\harness-review.md'; D = (Join-Path $codexHome 'harness-review.md') },
-    @{ S = 'shared\self-diagnosis.md'; D = (Join-Path $codexHome 'self-diagnosis.md') },
+    @{ S = 'codex\self-diagnosis.md'; D = (Join-Path $codexHome 'self-diagnosis.md'); O = 'shared\self-diagnosis.md' },
     @{ S = 'codex\harness-components.md'; D = (Join-Path $codexHome 'harness-components.md') },
     @{ S = 'codex\agents\harness-reviewer.toml'; D = (Join-Path $codexHome 'agents\harness-reviewer.toml') }
 )
@@ -119,27 +119,27 @@ $directoryLinks = @(
     @{ S = 'claude\hooks'; D = (Join-Path $claudeHome 'hooks') }
 )
 
-$sharedSkills = @('brain-storming', 'create-pull-request', 'grill-me', 'improve-code-base-architecture', 'interface-design', 'review-pull-request', 'structure-documentation', 'ubiquitous-language', 'integrate-context')
+$sharedSkills = @('brain-storming', 'create-pull-request', 'grill-me', 'improve-code-base-architecture', 'interface-design', 'review-pull-request', 'structure-documentation', 'ubiquitous-language')
 foreach ($name in $sharedSkills) {
     $directoryLinks += @{ S = "shared\skills\$name"; D = Join-Path $claudeHome "skills\$name" }
     $directoryLinks += @{ S = "shared\skills\$name"; D = Join-Path $agentsSkills $name }
 }
 
 $directoryLinks += @{ S = 'codex\skills\frontend-design'; D = Join-Path $agentsSkills 'frontend-design' }
-$directoryLinks += @{ S = 'claude\skills\refine-harness'; D = Join-Path $claudeHome 'skills\refine-harness' }
-$directoryLinks += @{ S = 'shared\skills\refine-harness'; D = Join-Path $agentsSkills 'refine-harness' }
 
 # 같은 이름의 플랫폼별 skill로 바뀐 이전 shared skill 링크만 먼저 제거한다.
-foreach ($destination in @((Join-Path $claudeHome 'skills\self-diagnose'), (Join-Path $agentsSkills 'self-diagnose'))) {
-    $existing = Get-Item -Force -LiteralPath $destination -ErrorAction SilentlyContinue
-    if ($existing -and $existing.LinkType -in @('Junction', 'SymbolicLink') -and
-        (Test-LinkTarget $destination (Join-Path $RepoRoot 'shared\skills\self-diagnose'))) {
-        [IO.Directory]::Delete($destination)
-        Write-Host "이전 관리 skill 링크 제거: $destination"
+foreach ($name in @('self-diagnose', 'integrate-context', 'refine-harness')) {
+    foreach ($destination in @((Join-Path $claudeHome "skills\$name"), (Join-Path $agentsSkills $name))) {
+        $existing = Get-Item -Force -LiteralPath $destination -ErrorAction SilentlyContinue
+        if ($existing -and $existing.LinkType -in @('Junction', 'SymbolicLink') -and
+            (Test-LinkTarget $destination (Join-Path $RepoRoot "shared\skills\$name"))) {
+            [IO.Directory]::Delete($destination)
+            Write-Host "이전 관리 skill 링크 제거: $destination"
+        }
     }
+    Install-Link -Source (Join-Path $RepoRoot "claude\skills\$name") -Destination (Join-Path $claudeHome "skills\$name") -Kind Directory
+    Install-Link -Source (Join-Path $RepoRoot "codex\skills\$name") -Destination (Join-Path $agentsSkills $name) -Kind Directory
 }
-Install-Link -Source (Join-Path $RepoRoot 'claude\skills\self-diagnose') -Destination (Join-Path $claudeHome 'skills\self-diagnose') -Kind Directory
-Install-Link -Source (Join-Path $RepoRoot 'codex\skills\self-diagnose') -Destination (Join-Path $agentsSkills 'self-diagnose') -Kind Directory
 
 foreach ($link in $directoryLinks) {
     Install-Link -Source (Join-Path $RepoRoot $link.S) -Destination $link.D -Kind Directory
@@ -171,11 +171,15 @@ foreach ($migration in $migrations) {
 }
 
 # 새 skill 연결을 확인한 뒤 기존 디렉터리 링크만 제거한다.
-foreach ($name in @('integrate-context', 'ubiquitous-language')) {
-    foreach ($destination in @((Join-Path $claudeHome "skills\$name"), (Join-Path $agentsSkills $name))) {
-        if (-not (Test-LinkTarget $destination (Join-Path $RepoRoot "shared\skills\$name"))) {
-            throw "새 skill 링크 검증 실패: $destination"
-        }
+$newSkillLinks = @(
+    @{ D = (Join-Path $claudeHome 'skills\ubiquitous-language'); S = 'shared\skills\ubiquitous-language' },
+    @{ D = (Join-Path $agentsSkills 'ubiquitous-language'); S = 'shared\skills\ubiquitous-language' },
+    @{ D = (Join-Path $claudeHome 'skills\integrate-context'); S = 'claude\skills\integrate-context' },
+    @{ D = (Join-Path $agentsSkills 'integrate-context'); S = 'codex\skills\integrate-context' }
+)
+foreach ($link in $newSkillLinks) {
+    if (-not (Test-LinkTarget $link.D (Join-Path $RepoRoot $link.S))) {
+        throw "새 skill 링크 검증 실패: $($link.D)"
     }
 }
 $previousSkills = @(

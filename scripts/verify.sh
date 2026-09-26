@@ -28,7 +28,7 @@ codex_home="$user_home/.codex"
 agents_skills="$user_home/.agents/skills"
 
 python_bin="$(command -v python3 || command -v python)"
-"$python_bin" "$repo_root/scripts/render_global_instructions.py" --check
+"$python_bin" "$repo_root/scripts/render_platform_files.py" --check
 
 assert_link() {
   local path expected actual
@@ -61,7 +61,7 @@ assert_link "$claude_home/agent-authoring.md" "$repo_root/shared/agent-authoring
 assert_link "$claude_home/self-harness-architecture.md" "$repo_root/shared/self-harness-architecture.md"
 assert_path_absent "$claude_home/self-harness-engineering.md"
 assert_link "$claude_home/harness-review.md" "$repo_root/shared/harness-review.md"
-assert_link "$claude_home/self-diagnosis.md" "$repo_root/shared/self-diagnosis.md"
+assert_link "$claude_home/self-diagnosis.md" "$repo_root/claude/self-diagnosis.md"
 assert_link "$claude_home/rules" "$repo_root/claude/rules"
 assert_link "$claude_home/agents" "$repo_root/claude/agents"
 assert_link "$claude_home/hooks" "$repo_root/claude/hooks"
@@ -74,7 +74,7 @@ assert_link "$codex_home/skill-authoring.md" "$repo_root/shared/skill-authoring.
 assert_link "$codex_home/agent-authoring.md" "$repo_root/shared/agent-authoring.md"
 assert_link "$codex_home/self-harness-architecture.md" "$repo_root/shared/self-harness-architecture.md"
 assert_link "$codex_home/harness-review.md" "$repo_root/shared/harness-review.md"
-assert_link "$codex_home/self-diagnosis.md" "$repo_root/shared/self-diagnosis.md"
+assert_link "$codex_home/self-diagnosis.md" "$repo_root/codex/self-diagnosis.md"
 assert_link "$codex_home/harness-components.md" "$repo_root/codex/harness-components.md"
 assert_path_absent "$codex_home/instruction-locations.md"
 assert_link "$codex_home/agents/harness-reviewer.toml" "$repo_root/codex/agents/harness-reviewer.toml"
@@ -88,7 +88,6 @@ shared_skills=(
   review-pull-request
   structure-documentation
   ubiquitous-language
-  integrate-context
 )
 
 for name in "${shared_skills[@]}"; do
@@ -97,10 +96,10 @@ for name in "${shared_skills[@]}"; do
 done
 
 assert_link "$agents_skills/frontend-design" "$repo_root/codex/skills/frontend-design"
-assert_link "$claude_home/skills/refine-harness" "$repo_root/claude/skills/refine-harness"
-assert_link "$agents_skills/refine-harness" "$repo_root/shared/skills/refine-harness"
-assert_link "$claude_home/skills/self-diagnose" "$repo_root/claude/skills/self-diagnose"
-assert_link "$agents_skills/self-diagnose" "$repo_root/codex/skills/self-diagnose"
+for name in self-diagnose integrate-context refine-harness; do
+  assert_link "$claude_home/skills/$name" "$repo_root/claude/skills/$name"
+  assert_link "$agents_skills/$name" "$repo_root/codex/skills/$name"
+done
 
 
 reviewer="$repo_root/codex/agents/harness-reviewer.toml"
@@ -130,14 +129,10 @@ if ! grep -Eq '^[[:space:]]*allow_implicit_invocation:[[:space:]]*false[[:space:
 fi
 
 refine_skill="$repo_root/claude/skills/refine-harness/SKILL.md"
-refine_policy="$repo_root/shared/skills/refine-harness/agents/openai.yaml"
+refine_policy="$repo_root/codex/skills/refine-harness/agents/openai.yaml"
 if ! grep -Eq '^disable-model-invocation:[[:space:]]*true[[:space:]]*$' "$refine_skill" \
   || ! grep -Eq '^[[:space:]]*allow_implicit_invocation:[[:space:]]*false[[:space:]]*$' "$refine_policy"; then
   echo 'refine-harness는 양 플랫폼에서 명시 호출 전용이어야 합니다.' >&2
-  exit 1
-fi
-if ! grep -Fq '~/.agents/skills/refine-harness/SKILL.md' "$refine_skill"; then
-  echo 'Claude refine-harness 어댑터가 shared 정본을 참조하지 않습니다.' >&2
   exit 1
 fi
 if [[ "$(tr -d '\r' < "$repo_root/CLAUDE.md")" != '@AGENTS.md' ]]; then

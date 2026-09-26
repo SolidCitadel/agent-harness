@@ -73,9 +73,12 @@ def run(request, verify=False):
         entry = data['files'].get(key(destination))
         exists = os.path.lexists(destination)
         current = linked(destination, source)
-        owned = (exists and entry is not None and entry['source'] == key(source)
-                 and entry['identity'] == identity(destination)
-                 and stat.S_ISREG(os.lstat(destination).st_mode))
+        # A link recorded for, or pointing at, the previous source 'O' stays managed when that source changes.
+        sources = [source] + ([Path(os.path.abspath(repo / item['O']))] if item.get('O') else [])
+        owned = exists and (
+            (entry is not None and entry['source'] in [key(path) for path in sources]
+             and entry['identity'] == identity(destination) and stat.S_ISREG(os.lstat(destination).st_mode))
+            or (os.path.islink(destination) and any(linked(destination, path) for path in sources[1:])))
         if verify:
             if not (current and entry and entry['source'] == key(source)
                     and entry['identity'] == identity(destination)):

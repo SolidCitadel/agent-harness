@@ -6,7 +6,7 @@
 - 외부 배포물은 `shared/vendor/`에 원본 그대로 두고 출처·버전·해시는 `shared/third-party-skills.json`에서 관리한다.
 - Claude Code와 Codex의 discovery 경로, agent 형식, hook, 권한 체계에 묶인 구현은 각 플랫폼 디렉터리에 둔다.
 - 플랫폼 전용 변경은 해당 플랫폼에서 완결한다. 반대 플랫폼은 관련 문제나 정제 작업이 생겼을 때 기존 커밋의 원인·변경 이유·검증 범위를 참고해 적용 필요성을 판단한다. 공통 정본은 연결된 플랫폼에 반영하고, 실제 효과를 확인한 범위는 구분해 기록한다.
-- `shared/global-instructions.md`는 공통 전역 섹션을 소유하고 플랫폼별 template은 섹션 배치와 전용 지침을 소유한다. `codex/AGENTS.md`와 `claude/CLAUDE.md`는 생성물이므로 직접 고치지 않는다.
+- 공통 원본에서 플랫폼마다 달라지는 문구는 `{{platform:이름}}` 빈칸으로 두고, 값은 `claude/platform-text.toml`과 `codex/platform-text.toml`에 같은 이름의 키로 둔다. `scripts/render_platform_files.py`의 대상 목록에 있는 생성물과 생성 디렉터리는 렌더러가 소유하므로 직접 고치지 않는다. 렌더러와 설치기는 원본과 다른 생성물을 덮어쓰고 원본에 없는 파일을 지운다. 새 렌더링 대상은 렌더러 대상 목록과 `shared/self-harness-architecture.md` 표에 추가한다. 새 생성물의 설치 경로가 기존 링크로 연결되지 않으면 `install.sh`·`install.ps1`·`verify.sh`·`verify.ps1`에 링크를 추가하고, 기존 링크의 원본이 생성물로 바뀌면 이전 링크 제거도 함께 둔다.
 
 ## 검증
 
@@ -14,7 +14,7 @@
 - Linux 설치 변경은 `scripts/install.sh`과 `scripts/verify.sh`로 확인한다.
 - 공통 링크 명세나 저장소 구조를 바꾸면 두 플랫폼 구현을 함께 검증한다.
 - 플랫폼별 동작은 해당 플랫폼의 실제 파일·링크 상태로 판정한다.
-- `scripts/render_global_instructions.py --check`로 공통 섹션의 누락·중복과 전역 지침 생성물 drift를 확인한다.
+- `scripts/render_platform_files.py --check`로 플랫폼 문구와 원본 빈칸의 정합성, 생성물 drift와 잔여 파일을 확인한다.
 
 ## 커밋
 
