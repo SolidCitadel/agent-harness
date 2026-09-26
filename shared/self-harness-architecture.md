@@ -16,6 +16,6 @@
 | `claude/skills/self-diagnose`, `codex/skills/self-diagnose` | 수행 진단을 대화 이력을 상속한 하위 agent에 위임하고, 반환된 보정 제안과 개정안을 사용자 승인에 연결 |
 | `shared/self-diagnosis.md` | 진단 agent의 권한·진단 절차·개정안 검수·반환 계약 |
 | `shared/skills/integrate-context` | 새 맥락의 기록 필요성과 정본을 판단하고 지속적으로 반영 |
-| `shared/skills/refine-harness` | 누적된 하네스의 개별 판단과 구조를 사용자와 함께 정제 |
+| `shared/skills/refine-harness` | 기존 하네스 구성물의 규범과 구조를 사용자와 함께 정제 |
 | `shared/harness-review.md` | 호출자가 제공할 입력과 하네스 검수자의 범위·권한·출력 |
 | `codex/agents/harness-reviewer.toml`, `claude/agents/harness-reviewer.md` | 하네스 검수 역할의 플랫폼별 실행 설정과 공통 계약 연결 |

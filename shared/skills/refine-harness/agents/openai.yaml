@@ -1,6 +1,6 @@
 interface:
   display_name: "Refine Harness"
-  short_description: "누적된 하네스의 필요성과 문구·절차·구조를 함께 정제"
+  short_description: "기존 하네스 구성물의 필요성과 문구·절차·구조를 함께 정제"
   default_prompt: "Use $refine-harness to reassess this harness and refine its wording, workflows, and structure while preserving agreed requirements."
 policy:
   allow_implicit_invocation: false
