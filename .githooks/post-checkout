@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+# 브랜치를 바꿔 커밋이 달라졌을 때만 설치 링크를 반영한다. 인자: 이전 HEAD, 새 HEAD, 브랜치 checkout 여부.
+[ "$3" = 1 ] && [ "$1" != "$2" ] || exit 0
+# rebase 도중의 checkout은 건너뛰고, 끝난 뒤 post-rewrite가 한 번 반영한다.
+for state in rebase-merge rebase-apply; do
+  [ -d "$(git rev-parse --git-path "$state")" ] && exit 0
+done
+PY="$(command -v python3 || command -v python)" || exit 0
+exec "$PY" "$(git rev-parse --show-toplevel)/scripts/reinstall_hook.py"

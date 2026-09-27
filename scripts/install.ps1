@@ -237,3 +237,4 @@ foreach ($previous in $previousSkills) {
 }
 
 Write-Host "설치 완료: $RepoRoot"
+& (Join-Path $PSScriptRoot 'verify.ps1') -RepoRoot $RepoRoot -UserHome $UserHome

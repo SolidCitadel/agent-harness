@@ -206,3 +206,4 @@ remove_previous_skill "$claude_home/skills/port-harness-change" "$repo_root/shar
 remove_previous_skill "$agents_skills/port-harness-change" "$repo_root/shared/skills/port-harness-change"
 
 printf '설치 완료: %s\n' "$repo_root"
+bash "$repo_root/scripts/verify.sh" --repo-root "$repo_root" --home "$user_home"

@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+# pull·merge 뒤 새 커밋의 설치 링크를 반영한다.
+PY="$(command -v python3 || command -v python)" || exit 0
+exec "$PY" "$(git rev-parse --show-toplevel)/scripts/reinstall_hook.py"

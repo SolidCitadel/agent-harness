@@ -1,15 +1,15 @@
 #!/usr/bin/env sh
-# 커밋 전 검사: 스테이징된 트리(index)의 플랫폼 생성물 drift를 확인하고, 어긋나면 커밋을 거부한다.
+# 커밋 전 검사: 스테이징된 트리(index)에서 저장소 불변 조건을 검사하고, 어긋나면 커밋을 거부한다.
 PY="$(command -v python3 || command -v python)"
 if [ -z "$PY" ]; then
-  echo 'python3 또는 python이 없어 플랫폼 생성물을 검사하지 못했습니다.' >&2
+  echo 'python3 또는 python이 없어 커밋 전 검사를 실행하지 못했습니다.' >&2
   exit 1
 fi
 export PYTHONUTF8=1 PYTHONIOENCODING=utf-8
 tree="$(mktemp -d)" || exit 1
 trap 'rm -rf "${tree:?}"' EXIT
 git checkout-index -a --prefix="$tree/" || exit 1
-if ! "$PY" "$tree/scripts/render_platform_files.py" --check; then
-  echo '스테이징된 원본과 생성물이 어긋납니다. scripts/render_platform_files.py를 실행하고 생성물도 함께 스테이징한 뒤 다시 커밋하세요.' >&2
+if ! "$PY" "$tree/scripts/check_repo.py"; then
+  echo '커밋 전 검사가 실패했습니다. 위 항목을 고쳐 스테이징한 뒤 다시 커밋하세요.' >&2
   exit 1
 fi
