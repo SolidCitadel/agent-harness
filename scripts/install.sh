@@ -98,6 +98,7 @@ install_link "$repo_root/shared/skill-authoring.md" "$claude_home/skill-authorin
 install_link "$repo_root/shared/agent-authoring.md" "$claude_home/agent-authoring.md"
 install_link "$repo_root/shared/self-harness-architecture.md" "$claude_home/self-harness-architecture.md"
 install_link "$repo_root/shared/harness-review.md" "$claude_home/harness-review.md"
+install_link "$repo_root/claude/harness-components.md" "$claude_home/harness-components.md"
 retire_link "$claude_home/self-diagnosis.md" "$repo_root/shared/self-diagnosis.md"
 install_link "$repo_root/claude/self-diagnosis.md" "$claude_home/self-diagnosis.md"
 install_link "$repo_root/claude/commands/frontend-design.md" "$claude_home/commands/frontend-design.md"

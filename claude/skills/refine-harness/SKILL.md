@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # 하네스 정제
 
-`~/.claude/harness-authoring.md`와 `~/.claude/rules/harness-authoring.md`를 읽는다.
+`~/.claude/harness-authoring.md`와 `~/.claude/harness-components.md`를 읽는다.
 
 ## 검토 범위
 

@@ -24,6 +24,10 @@ TARGETS = {
         "claude": Path("claude/self-diagnosis.md"),
         "codex": Path("codex/self-diagnosis.md"),
     },
+    Path("shared/harness-components.md"): {
+        "claude": Path("claude/harness-components.md"),
+        "codex": Path("codex/harness-components.md"),
+    },
     Path("shared/skills/integrate-context"): {
         "claude": Path("claude/skills/integrate-context"),
         "codex": Path("codex/skills/integrate-context"),

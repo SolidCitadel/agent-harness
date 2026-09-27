@@ -122,6 +122,7 @@ $fileLinks = @(
     @{ S = 'shared\agent-authoring.md'; D = (Join-Path $claudeHome 'agent-authoring.md') },
     @{ S = 'shared\self-harness-architecture.md'; D = (Join-Path $claudeHome 'self-harness-architecture.md') },
     @{ S = 'shared\harness-review.md'; D = (Join-Path $claudeHome 'harness-review.md') },
+    @{ S = 'claude\harness-components.md'; D = (Join-Path $claudeHome 'harness-components.md') },
     @{ S = 'claude\self-diagnosis.md'; D = (Join-Path $claudeHome 'self-diagnosis.md'); O = 'shared\self-diagnosis.md' },
     @{ S = 'claude\commands\frontend-design.md'; D = (Join-Path $claudeHome 'commands\frontend-design.md') },
     @{ S = 'shared\vendor\anthropics\frontend-design\LICENSE.txt'; D = (Join-Path $claudeHome 'commands\frontend-design.LICENSE.txt') },

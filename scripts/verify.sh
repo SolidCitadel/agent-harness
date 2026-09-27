@@ -67,6 +67,7 @@ assert_link "$claude_home/agent-authoring.md" "$repo_root/shared/agent-authoring
 assert_link "$claude_home/self-harness-architecture.md" "$repo_root/shared/self-harness-architecture.md"
 assert_path_absent "$claude_home/self-harness-engineering.md"
 assert_link "$claude_home/harness-review.md" "$repo_root/shared/harness-review.md"
+assert_link "$claude_home/harness-components.md" "$repo_root/claude/harness-components.md"
 assert_link "$claude_home/self-diagnosis.md" "$repo_root/claude/self-diagnosis.md"
 assert_link "$claude_home/rules" "$repo_root/claude/rules"
 assert_link "$claude_home/agents" "$repo_root/claude/agents"
@@ -156,10 +157,12 @@ for pattern in '**/AGENTS.override.md' '**/.codex/rules/**/*.rules' '**/.codex/h
     exit 1
   fi
 done
-if ! grep -Fq -- '~/.claude/harness-authoring.md' "$harness_rule"; then
-  echo 'Claude 공통 하네스 rule이 공통 작성 규율을 참조하지 않습니다.' >&2
-  exit 1
-fi
+for reference in '~/.claude/harness-authoring.md' '~/.claude/harness-components.md'; do
+  if ! grep -Fq -- "$reference" "$harness_rule"; then
+    echo "Claude 공통 하네스 rule의 참조 누락: $reference" >&2
+    exit 1
+  fi
+done
 if ! grep -Fq -- '~/.claude/skill-authoring.md' "$skill_rule"; then
   echo 'Claude skill 작성 rule이 공통 skill 규율을 참조하지 않습니다.' >&2
   exit 1

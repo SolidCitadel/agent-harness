@@ -9,11 +9,11 @@
 | `shared/global-instructions.md` | 양 플랫폼 전역 지침의 원본 |
 | `claude/platform-text.toml`, `codex/platform-text.toml` | 공통 원본의 플랫폼 빈칸에 들어갈 문구 |
 | `codex/AGENTS.md`, `claude/CLAUDE.md` | 공통 원본에서 생성해 설치하는 전역 지침 |
-| `claude/`·`codex/`의 `self-diagnosis.md`, `skills/integrate-context`, `skills/refine-harness` | 공통 원본에서 생성해 설치하는 플랫폼별 파일 |
+| `claude/`·`codex/`의 `self-diagnosis.md`, `harness-components.md`, `skills/integrate-context`, `skills/refine-harness` | 공통 원본에서 생성해 설치하는 플랫폼별 파일 |
 | `shared/harness-authoring.md` | 모든 하네스 구성물에 적용하는 플랫폼 중립 작성·개정 규율 |
 | `shared/skill-authoring.md`, `shared/agent-authoring.md` | 해당 유형을 다룰 때 읽는 공통 전문 지식 |
-| `codex/harness-components.md` | Codex 구성물의 선택·위치와 유형별 작성 규율 라우팅 |
-| `claude/rules/harness-authoring.md` | Claude Code의 구성물 유형과 전역·프로젝트 위치 |
+| `shared/harness-components.md` | 구성물 선택 기준과 플랫폼별 위치, 유형별 작성 규율 라우팅의 원본 |
+| `claude/rules/` | Claude Code에서 하네스 파일을 다룰 때 작성 규율을 자동으로 읽게 하는 연결 |
 | `claude/skills/self-diagnose`, `codex/skills/self-diagnose` | 수행 진단을 대화 이력을 상속한 하위 agent에 위임하고, 반환된 보정 제안과 개정안을 사용자 승인에 연결 |
 | `shared/self-diagnosis.md` | 진단 agent의 권한·진단 절차·개정안 검수·반환 계약 |
 | `shared/skills/integrate-context` | 새 맥락의 기록 필요성과 정본을 판단하고 지속적으로 반영 |

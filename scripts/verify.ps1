@@ -79,6 +79,7 @@ Assert-Link (Join-Path $claudeHome 'agent-authoring.md') (Join-Path $RepoRoot 's
 Assert-Link (Join-Path $claudeHome 'self-harness-architecture.md') (Join-Path $RepoRoot 'shared\self-harness-architecture.md')
 Assert-PathAbsent (Join-Path $claudeHome 'self-harness-engineering.md')
 Assert-Link (Join-Path $claudeHome 'harness-review.md') (Join-Path $RepoRoot 'shared\harness-review.md')
+Assert-Link (Join-Path $claudeHome 'harness-components.md') (Join-Path $RepoRoot 'claude\harness-components.md')
 Assert-Link (Join-Path $claudeHome 'self-diagnosis.md') (Join-Path $RepoRoot 'claude\self-diagnosis.md')
 Assert-Link (Join-Path $claudeHome 'rules') (Join-Path $RepoRoot 'claude\rules')
 Assert-Link (Join-Path $claudeHome 'agents') (Join-Path $RepoRoot 'claude\agents')
@@ -142,8 +143,8 @@ $codexGlobal = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot 'codex\AGENTS.
 foreach ($pattern in @('**/AGENTS.override.md', '**/.codex/rules/**/*.rules', '**/.codex/hooks.json', '**/.codex/config.toml')) {
     if ($harnessRule -notmatch [regex]::Escape($pattern)) { throw "Claude 공통 하네스 rule의 경로 누락: $pattern" }
 }
-if ($harnessRule -notmatch [regex]::Escape('~/.claude/harness-authoring.md')) {
-    throw 'Claude 공통 하네스 rule이 공통 작성 규율을 참조하지 않습니다.'
+foreach ($reference in @('~/.claude/harness-authoring.md', '~/.claude/harness-components.md')) {
+    if ($harnessRule -notmatch [regex]::Escape($reference)) { throw "Claude 공통 하네스 rule의 참조 누락: $reference" }
 }
 if ($skillRule -notmatch [regex]::Escape('~/.claude/skill-authoring.md')) {
     throw 'Claude skill 작성 rule이 공통 skill 규율을 참조하지 않습니다.'

@@ -7,8 +7,28 @@
 
 "서브에이전트 모델" = ''
 
-"하네스 작성 규율" = '''`~/.claude/harness-authoring.md`와 `~/.claude/rules/harness-authoring.md`'''
+"하네스 작성 규율" = '''`~/.claude/harness-authoring.md`와 `~/.claude/harness-components.md`'''
 
 "하네스 검수 계약" = '''`~/.claude/harness-review.md`'''
 
 "명시 호출 전용" = '''disable-model-invocation: true'''
+
+"전역 지침" = '''`~/.claude/CLAUDE.md`'''
+
+"프로젝트 지침" = '''`CLAUDE.md`'''
+
+"경로 한정 지침" = '''rule로 프로젝트 `.claude/rules/<주제>.md` 또는 전역 `~/.claude/rules/<주제>.md`에 둔다. rule 파일명은 하나의 주제를 나타낸다. rule은 frontmatter `paths`의 glob에 매칭되는 파일로 작업할 때만 로드되고, `paths`가 없으면 항상 로드된다.'''
+
+"skill 위치" = '''프로젝트 `.claude/skills/<이름>/SKILL.md` 또는 전역 `~/.claude/skills/<이름>/SKILL.md`'''
+
+"skill 작성 규율" = '''`~/.claude/skill-authoring.md`'''
+
+"agent 위치" = '''프로젝트 `.claude/agents/*.md` 또는 전역 `~/.claude/agents/*.md`'''
+
+"agent 작성 규율" = '''`~/.claude/agent-authoring.md`'''
+
+"hook 위치" = '''에이전트 hook은 프로젝트 `.claude/settings.json` 또는 전역 `~/.claude/settings.json`의 `hooks`에서 관리한다.'''
+
+"추가 구성물" = ''
+
+"하네스 검수 agent" = '''`harness-reviewer`'''

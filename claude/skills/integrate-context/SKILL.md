@@ -18,4 +18,4 @@ description: 사용자가 기록·기억·향후 적용을 요청하거나, 새�
 
 승인된 범위에서 정본과 필요한 참조를 갱신한다. 의미가 충실히 반영됐으며 필요한 주체가 해당 정보에 도달할 수 있는지 확인한다.
 
-하네스 개정 시 `~/.claude/harness-authoring.md`와 `~/.claude/rules/harness-authoring.md`를 읽는다. 제품·운영 문서에 반영할 때는 해당 문서의 규율을 적용한다.
+하네스 개정 시 `~/.claude/harness-authoring.md`와 `~/.claude/harness-components.md`를 읽는다. 제품·운영 문서에 반영할 때는 해당 문서의 규율을 적용한다.
