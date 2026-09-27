@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$(git rev-parse --show-toplevel)/scripts/render-hook.sh\"",
+            "commandWindows": "for /f \"delims=\" %r in ('git rev-parse --show-toplevel') do python \"%r\\scripts\\render_hook.py\""
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -90,5 +90,32 @@ class FileLinksTest(unittest.TestCase):
         self.assertFalse(self.state.exists())
 
 
+    def moved_request(self):
+        generated = self.repo / 'generated.md'
+        generated.write_text('generated')
+        return {**self.request, 'links': [{'S': 'generated.md', 'D': str(self.destination), 'O': 'rule.md'}]}
+
+    def test_link_recorded_for_previous_source_moves_to_new_source(self):
+        links.run(self.request)
+        request = self.moved_request()
+        links.run(request)
+        self.assertEqual(self.destination.read_text(), 'generated')
+        links.run(request, verify=True)
+
+    def test_previous_source_does_not_adopt_user_file(self):
+        self.destination.write_text('private')
+        with self.assertRaises(ValueError):
+            links.run(self.moved_request())
+        self.assertEqual(self.destination.read_text(), 'private')
+
+    def test_symbolic_link_to_previous_source_moves_to_new_source(self):
+        patch.stopall()
+        self.destination.symlink_to(self.source)
+        request = self.moved_request()
+        links.run(request)
+        self.assertEqual(os.readlink(self.destination), str(self.repo / 'generated.md'))
+        links.run(request, verify=True)
+
+
 if __name__ == '__main__':
     unittest.main()

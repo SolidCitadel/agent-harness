@@ -1,12 +1,11 @@
 ---
 name: refine-harness
 description: 기존 하네스 구성물의 필요성·효과·비용과 구조를 사용자와 함께 재평가할 때 명시적으로 사용한다. 각 규범을 심사하고 구성물 사이의 관계를 재검토해, 유지할 요구를 충족하는 문구·절차·구조로 정제한다.
-{{platform:명시 호출 전용}}
 ---
 
 # 하네스 정제
 
-{{platform:하네스 작성 규율}}를 읽는다.
+`~/.codex/harness-authoring.md`와 `~/.codex/harness-components.md`를 읽는다.
 
 ## 검토 범위
 

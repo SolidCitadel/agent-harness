@@ -1,0 +1,14 @@
+# 공통 원본의 {{platform:이름}} 빈칸에 들어갈 Claude Code 문구. 키가 빈칸 이름이고 값 전체가 삽입된다.
+# 빈 값을 받은 빈칸이 한 줄을 차지하면 그 줄과 인접한 빈 줄 하나를 지운다.
+
+"전역 지침 제목" = '''전역 CLAUDE.md'''
+
+"수행 절차" = ''
+
+"서브에이전트 모델" = ''
+
+"하네스 작성 규율" = '''`~/.claude/harness-authoring.md`와 `~/.claude/rules/harness-authoring.md`'''
+
+"하네스 검수 계약" = '''`~/.claude/harness-review.md`'''
+
+"명시 호출 전용" = '''disable-model-invocation: true'''
