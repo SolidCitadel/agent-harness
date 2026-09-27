@@ -228,24 +228,20 @@ def check_shell(root: Path) -> list[str]:
 
 
 def check_install(root: Path) -> list[str]:
-    """Install a git-free copy into a scratch home, run the verifier, and require every generated output to be reachable through an installed link."""
-    if not sys.platform.startswith("linux"):
-        return []
+    """Install a git-free copy into a scratch home with the installer's own verification, and require every generated
+    output to be covered by the installer's link list."""
+    import install  # 검사 대상 트리의 설치 목록
+
+    errors = [f"설치 목록(scripts/install.py의 LINKS)이 생성물을 연결하지 않습니다: {output.as_posix()}"
+              for output in generated_outputs()
+              if not any(Path(link.source) == output or Path(link.source) in output.parents for link in install.LINKS)]
     with tempfile.TemporaryDirectory() as scratch:
         # git 작업 트리에서 설치하면 설치기가 저장소 설정과 hook을 다루므로, git이 아닌 복사본에서 설치한다.
         copy = Path(scratch) / "repo"
         shutil.copytree(root, copy, ignore=shutil.ignore_patterns(".git", "__pycache__"), symlinks=True)
-        home = Path(scratch) / "home"
-        errors = failure("설치 시뮬레이션(scripts/install.sh, 설치기 끝의 verify.sh 포함)",
-                         run(["bash", str(copy / "scripts/install.sh"), "--home", str(home)], copy))
-        if errors:
-            return errors
-        targets = {Path(os.path.realpath(link)) for link in home.rglob("*") if link.is_symlink()}
-        for output in generated_outputs():
-            real = (copy / output).resolve()
-            if not any(real == target or target in real.parents for target in targets):
-                errors.append(f"설치기가 생성물을 연결하지 않습니다: {output.as_posix()} (install·verify 스크립트에 링크 추가)")
-        return errors
+        errors += failure("설치 시뮬레이션(scripts/install.py, 설치 후 검증 포함)",
+                          run([sys.executable, str(copy / "scripts/install.py"), "--home", str(Path(scratch) / "home")], copy))
+    return errors
 
 
 STATIC_CHECKS = (check_render, check_frontmatter, check_references, check_invocation_policies, check_vendor,

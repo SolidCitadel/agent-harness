@@ -1,5 +1,4 @@
-"""Install/verify Windows file links using recorded filesystem identity."""
-import argparse
+"""Windows file links for scripts/install.py: symbolic links, or hard links recorded by filesystem identity."""
 import json
 import os
 from pathlib import Path
@@ -49,9 +48,20 @@ def save(path, data):
             os.unlink(temporary)
 
 
+def link_target(path):
+    """Where a symbolic link or junction points, one level only. Windows reports targets with the \\\\?\\ or \\??\\
+    namespace prefix, which is dropped so the target compares with ordinary paths."""
+    target = os.readlink(path)
+    for prefix, replacement in (('\\\\?\\UNC\\', '\\\\'), ('\\??\\UNC\\', '\\\\'), ('\\\\?\\', ''), ('\\??\\', '')):
+        if target.startswith(prefix):
+            target = replacement + target[len(prefix):]
+            break
+    return Path(os.path.normpath(os.path.join(path.parent, target)))
+
+
 def linked(destination, source):
     if destination.is_symlink():
-        return key(os.path.join(destination.parent, os.readlink(destination))) == key(source)
+        return key(link_target(destination)) == key(source)
     return destination.is_file() and source.is_file() and os.path.samefile(destination, source)
 
 
@@ -110,14 +120,3 @@ def run(request, verify=False):
         data['files'][key(destination)] = {'source': key(source), 'identity': identity(destination)}
         save(state_path, data)
 
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--verify', action='store_true')
-    parser.add_argument('--request', type=Path, required=True)
-    args = parser.parse_args()
-    try:
-        run(json.loads(args.request.read_text(encoding='utf-8')), args.verify)
-    except (OSError, ValueError, KeyError, TypeError) as error:
-        print(str(error), file=sys.stderr)
-        sys.exit(1)

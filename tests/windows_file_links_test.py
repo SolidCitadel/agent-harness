@@ -10,6 +10,7 @@ from unittest.mock import patch
 spec = importlib.util.spec_from_file_location('links', Path(__file__).parents[1] / 'scripts/windows_file_links.py')
 links = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(links)
+REAL_SYMLINK = os.symlink  # setUp이 권한 없는 Windows를 흉내 내려 os.symlink를 막기 전의 함수
 
 
 class FileLinksTest(unittest.TestCase):
@@ -32,6 +33,11 @@ class FileLinksTest(unittest.TestCase):
         mock = patch.object(links.os, 'symlink', side_effect=denied)
         mock.start()
         self.addCleanup(mock.stop)
+
+    def test_windows_namespace_prefix_is_ignored(self):
+        REAL_SYMLINK(self.source, self.destination)
+        with patch.object(links.os, 'readlink', return_value='\\\\?\\' + str(self.source)):
+            self.assertTrue(links.linked(self.destination, self.source))
 
     def test_refresh_after_source_replacement(self):
         links.run(self.request)

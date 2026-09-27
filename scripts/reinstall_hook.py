@@ -27,16 +27,12 @@ def main() -> int:
     env = {key: value for key, value in os.environ.items()
            if key not in {"GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR", "GIT_OBJECT_DIRECTORY", "GIT_PREFIX"}}
     env.update(PYTHONUTF8="1", PYTHONIOENCODING="utf-8")
-    if os.name == "nt":
-        command = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(root / "scripts" / "install.ps1")]
-        result = subprocess.run(command, cwd=root, env=env)
-    else:
-        result = subprocess.run(["bash", str(root / "scripts" / "install.sh")], cwd=root, env=env,
-                                capture_output=True, text=True, encoding="utf-8")
-        # 바뀐 링크와 오류만 보여 준다.
-        for line in (result.stdout + result.stderr).splitlines():
-            if not line.startswith("유지:"):
-                print(line)
+    result = subprocess.run([sys.executable, str(root / "scripts" / "install.py")], cwd=root, env=env,
+                            capture_output=True, text=True, encoding="utf-8")
+    # 바뀐 링크와 오류만 보여 준다.
+    for line in (result.stdout + result.stderr).splitlines():
+        if not line.startswith("유지:"):
+            print(line)
     if result.returncode != 0:
         print("하네스 재설치에 실패했습니다. 위 메시지를 확인하고 설치기를 직접 실행하세요.", file=sys.stderr)
     warn_unchecked_head(root, env)
