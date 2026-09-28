@@ -5,6 +5,7 @@ from pathlib import Path
 import stat
 import sys
 import tempfile
+import time
 
 
 def identity(path):
@@ -42,7 +43,17 @@ def save(path, data):
             stream.write('\n')
             stream.flush()
             os.fsync(stream.fileno())
-        os.replace(temporary, path)
+        # Windows readers and scanners can briefly prevent replacing a closed file.
+        # Keep the old state intact and retry only the replacement, for at most 1.55s.
+        delays = (0.05, 0.1, 0.2, 0.4, 0.8)
+        for attempt in range(len(delays) + 1):
+            try:
+                os.replace(temporary, path)
+                break
+            except OSError as error:
+                if getattr(error, 'winerror', None) not in (5, 32, 33) or attempt == len(delays):
+                    raise
+                time.sleep(delays[attempt])
     finally:
         if os.path.lexists(temporary):
             os.unlink(temporary)
@@ -117,6 +128,8 @@ def run(request, verify=False):
                     os.unlink(temporary)
         if not linked(destination, source):
             raise ValueError(f'New link verification failed: {destination}')
-        data['files'][key(destination)] = {'source': key(source), 'identity': identity(destination)}
-        save(state_path, data)
+        entry = {'source': key(source), 'identity': identity(destination)}
+        if data['files'].get(key(destination)) != entry:
+            data['files'][key(destination)] = entry
+            save(state_path, data)
 

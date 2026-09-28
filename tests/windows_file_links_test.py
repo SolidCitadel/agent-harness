@@ -10,7 +10,6 @@ from unittest.mock import patch
 spec = importlib.util.spec_from_file_location('links', Path(__file__).parents[1] / 'scripts/windows_file_links.py')
 links = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(links)
-REAL_SYMLINK = os.symlink  # setUp이 권한 없는 Windows를 흉내 내려 os.symlink를 막기 전의 함수
 
 
 class FileLinksTest(unittest.TestCase):
@@ -30,14 +29,13 @@ class FileLinksTest(unittest.TestCase):
         self.request = {'repo': str(self.repo), 'home': str(self.home), 'links': [{'S': 'rule.md', 'D': str(self.destination)}]}
         denied = OSError('symbolic links unavailable')
         denied.winerror = 1314
-        mock = patch.object(links.os, 'symlink', side_effect=denied)
-        mock.start()
-        self.addCleanup(mock.stop)
+        self.symlink_patch = patch.object(links.os, 'symlink', side_effect=denied)
+        self.symlink_patch.start()
+        self.addCleanup(self.symlink_patch.stop)
 
     def test_windows_namespace_prefix_is_ignored(self):
-        REAL_SYMLINK(self.source, self.destination)
         with patch.object(links.os, 'readlink', return_value='\\\\?\\' + str(self.source)):
-            self.assertTrue(links.linked(self.destination, self.source))
+            self.assertEqual(links.link_target(self.destination), self.source)
 
     def test_refresh_after_source_replacement(self):
         links.run(self.request)
@@ -95,6 +93,52 @@ class FileLinksTest(unittest.TestCase):
             links.run(self.request)
         self.assertFalse(self.state.exists())
 
+    def test_unchanged_install_does_not_replace_state(self):
+        links.run(self.request)
+        with patch.object(links, 'save', side_effect=AssertionError('unnecessary state replacement')):
+            links.run(self.request)
+        links.run(self.request, verify=True)
+
+    def test_state_replacement_retries_temporary_windows_denial(self):
+        denied = PermissionError('file temporarily locked')
+        denied.winerror = 5
+        replace = os.replace
+        attempts = []
+
+        def replace_after_unlock(source, destination):
+            attempts.append(destination)
+            if len(attempts) == 1:
+                raise denied
+            replace(source, destination)
+
+        with patch.object(links.os, 'replace', side_effect=replace_after_unlock), \
+                patch.object(links.time, 'sleep') as sleep:
+            links.save(self.state, {'version': 1, 'files': {}})
+        self.assertEqual(len(attempts), 2)
+        sleep.assert_called_once_with(0.05)
+        self.assertEqual(links.load(self.state), {'version': 1, 'files': {}})
+
+    def test_persistent_denial_preserves_state_and_cleans_temporary_file(self):
+        links.run(self.request)
+        original = self.state.read_bytes()
+        denied = PermissionError('file locked')
+        denied.winerror = 5
+        with patch.object(links.os, 'replace', side_effect=denied) as replace, \
+                patch.object(links.time, 'sleep'):
+            with self.assertRaises(PermissionError):
+                links.save(self.state, {'version': 1, 'files': {}})
+        self.assertEqual(replace.call_count, 6)
+        self.assertEqual(self.state.read_bytes(), original)
+        self.assertEqual(list(self.state.parent.glob(self.state.name + '.*')), [])
+
+    def test_other_save_errors_are_not_retried(self):
+        with patch.object(links.os, 'replace', side_effect=OSError('disk failure')) as replace, \
+                patch.object(links.time, 'sleep') as sleep:
+            with self.assertRaises(OSError):
+                links.save(self.state, {'version': 1, 'files': {}})
+        replace.assert_called_once()
+        sleep.assert_not_called()
+
 
     def moved_request(self):
         generated = self.repo / 'generated.md'
@@ -115,11 +159,17 @@ class FileLinksTest(unittest.TestCase):
         self.assertEqual(self.destination.read_text(), 'private')
 
     def test_symbolic_link_to_previous_source_moves_to_new_source(self):
-        patch.stopall()
-        self.destination.symlink_to(self.source)
+        self.symlink_patch.stop()
+        try:
+            self.destination.symlink_to(self.source)
+        except OSError as error:
+            if getattr(error, 'winerror', None) == 1314:
+                self.skipTest('Windows process cannot create a symbolic link')
+            raise
+        self.symlink_patch.start()  # 새 링크는 권한 부족으로 hard link로 대체한다.
         request = self.moved_request()
         links.run(request)
-        self.assertEqual(os.readlink(self.destination), str(self.repo / 'generated.md'))
+        self.assertTrue(links.linked(self.destination, self.repo / 'generated.md'))
         links.run(request, verify=True)
 
 
