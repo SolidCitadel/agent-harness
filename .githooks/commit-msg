@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+# 하네스 파일을 바꾸는 커밋 메시지에 개정 출처 trailer가 있는지 검사한다.
+PY="$(command -v python3 || command -v python)"
+if [ -z "$PY" ]; then
+  echo 'python3 또는 python이 없어 커밋 메시지 검사를 실행하지 못했습니다.' >&2
+  exit 1
+fi
+export PYTHONUTF8=1 PYTHONIOENCODING=utf-8
+exec "$PY" "$(git rev-parse --show-toplevel)/scripts/check_commit_msg.py" "$1"

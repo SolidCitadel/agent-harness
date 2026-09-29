@@ -15,7 +15,7 @@ HANDLER = HOOKS["hooks"]["PostToolUse"][0]["hooks"][0]
 
 class CodexHookTest(unittest.TestCase):
     def setUp(self):
-        self.scratch = tempfile.TemporaryDirectory(prefix="codex-hook-", dir=ROOT)
+        self.scratch = tempfile.TemporaryDirectory(prefix="codex-hook-")
         self.addCleanup(self.scratch.cleanup)
         self.base = Path(self.scratch.name)
         self.repo = self.base / "main"
