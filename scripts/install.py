@@ -32,6 +32,7 @@ class Link:
 SHARED_SKILLS = ("brain-storming", "create-pull-request", "grill-me", "improve-code-base-architecture",
                  "interface-design", "review-pull-request", "structure-documentation", "ubiquitous-language")
 PLATFORM_SKILLS = ("self-diagnose", "integrate-context", "refine-harness", "modify-harness")
+CLAUDE_SKILLS = ("codex-exec",)
 
 LINKS = (
     Link("claude/CLAUDE.md", ".claude/CLAUDE.md"),
@@ -65,6 +66,7 @@ LINKS = (
     *(link for name in SHARED_SKILLS for link in (
         Link(f"shared/skills/{name}", f".claude/skills/{name}"),
         Link(f"shared/skills/{name}", f".agents/skills/{name}"))),
+    *(Link(f"claude/skills/{name}", f".claude/skills/{name}") for name in CLAUDE_SKILLS),
 )
 
 # 이름이 바뀐 구성물의 이전 설치 경로. 새 경로 설치를 확인한 뒤, 이전·새 원본을 가리키는 관리 링크만 제거한다.

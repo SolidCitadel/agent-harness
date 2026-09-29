@@ -4,7 +4,7 @@ Claude Code와 Codex의 개인 운영 지침과 재사용 workflow를 관리한�
 
 - `shared/skills/`: 직접 관리하는 플랫폼 공통 workflow
 - `shared/vendor/`: 수정하지 않는 외부 원본과 라이선스
-- `claude/`: Claude Code의 지침·rule·agent·hook. 수동 도구는 설치 시 `~/.claude/commands/`로 연결한다.
+- `claude/`: Claude Code의 지침·rule·agent·hook과 플랫폼별 skill. 수동 도구는 설치 시 `~/.claude/commands/`로 연결한다.
 - `codex/`: Codex의 지침·하네스 검수 agent·플랫폼별 skill. 수동 skill은 암시 호출을 끈다.
 - `scripts/`: 제품의 고정 discovery 경로에 선택적 링크를 설치하고 검증하는 설치기, 플랫폼 생성물 렌더러, 저장소 검사와 hook 실행기
 
