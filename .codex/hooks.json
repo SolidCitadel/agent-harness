@@ -6,8 +6,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$(git rev-parse --show-toplevel)/scripts/render-hook.sh\"",
-            "commandWindows": "for /f \"delims=\" %r in ('git rev-parse --show-toplevel') do python \"%r\\scripts\\render_hook.py\""
+            "command": "PY=$(command -v python3 || command -v python); [ -n \"$PY\" ] || { echo 'python3 or python is required for render hook' >&2; exit 2; }; \"$PY\" -c \"from pathlib import Path; import subprocess,sys; root=next((p for p in (Path.cwd(), *Path.cwd().parents) if (p/'.git').is_dir() or (p/'.git').is_file()),None); hook=root/'scripts'/'render_hook.py' if root else None; ok=hook is not None and hook.is_file(); print('render hook not found in current worktree',file=sys.stderr) if not ok else None; sys.exit(subprocess.call([sys.executable,str(hook)]) if ok else 2)\"",
+            "commandWindows": "python -c \"from pathlib import Path; import subprocess,sys; root=next((p for p in (Path.cwd(), *Path.cwd().parents) if (p/'.git').is_dir() or (p/'.git').is_file()),None); hook=root/'scripts'/'render_hook.py' if root else None; ok=hook is not None and hook.is_file(); print('render hook not found in current worktree',file=sys.stderr) if not ok else None; sys.exit(subprocess.call([sys.executable,str(hook)]) if ok else 2)\""
           }
         ]
       }
