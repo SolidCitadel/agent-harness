@@ -24,6 +24,10 @@ TARGETS = {
         "claude": Path("claude/self-diagnosis.md"),
         "codex": Path("codex/self-diagnosis.md"),
     },
+    Path("shared/harness-revision.md"): {
+        "claude": Path("claude/harness-revision.md"),
+        "codex": Path("codex/harness-revision.md"),
+    },
     Path("shared/harness-components.md"): {
         "claude": Path("claude/harness-components.md"),
         "codex": Path("codex/harness-components.md"),
@@ -35,6 +39,10 @@ TARGETS = {
     Path("shared/skills/refine-harness"): {
         "claude": Path("claude/skills/refine-harness"),
         "codex": Path("codex/skills/refine-harness"),
+    },
+    Path("shared/skills/modify-harness"): {
+        "claude": Path("claude/skills/modify-harness"),
+        "codex": Path("codex/skills/modify-harness"),
     },
 }
 TOKEN = re.compile(r"\{\{platform:([^{}]+)\}\}")

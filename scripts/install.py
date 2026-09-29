@@ -31,7 +31,7 @@ class Link:
 
 SHARED_SKILLS = ("brain-storming", "create-pull-request", "grill-me", "improve-code-base-architecture",
                  "interface-design", "review-pull-request", "structure-documentation", "ubiquitous-language")
-PLATFORM_SKILLS = ("self-diagnose", "integrate-context", "refine-harness")
+PLATFORM_SKILLS = ("self-diagnose", "integrate-context", "refine-harness", "modify-harness")
 
 LINKS = (
     Link("claude/CLAUDE.md", ".claude/CLAUDE.md"),
@@ -42,6 +42,7 @@ LINKS = (
     Link("shared/harness-review.md", ".claude/harness-review.md"),
     Link("claude/harness-components.md", ".claude/harness-components.md"),
     Link("claude/self-diagnosis.md", ".claude/self-diagnosis.md", "shared/self-diagnosis.md"),
+    Link("claude/harness-revision.md", ".claude/harness-revision.md"),
     Link("claude/commands/frontend-design.md", ".claude/commands/frontend-design.md"),
     Link("shared/vendor/anthropics/frontend-design/LICENSE.txt", ".claude/commands/frontend-design.LICENSE.txt"),
     Link("claude/rules", ".claude/rules"),
@@ -54,6 +55,7 @@ LINKS = (
     Link("shared/self-harness-architecture.md", ".codex/self-harness-architecture.md"),
     Link("shared/harness-review.md", ".codex/harness-review.md"),
     Link("codex/self-diagnosis.md", ".codex/self-diagnosis.md", "shared/self-diagnosis.md"),
+    Link("codex/harness-revision.md", ".codex/harness-revision.md"),
     Link("codex/harness-components.md", ".codex/harness-components.md"),
     Link("codex/agents/harness-reviewer.toml", ".codex/agents/harness-reviewer.toml"),
     Link("codex/skills/frontend-design", ".agents/skills/frontend-design"),

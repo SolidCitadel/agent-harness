@@ -32,3 +32,9 @@
 "추가 구성물" = ''
 
 "하네스 검수 agent" = '''`harness-reviewer`'''
+
+"하네스 수정 계약" = '''`~/.claude/harness-revision.md`'''
+
+"이력 상속 위임" = '''`Agent` 도구를 `subagent_type: fork`로 호출해 대화 이력을 상속한 하위 agent를 생성한다.'''
+
+"하위 agent 전달" = '''`SendMessage`로 같은 하위 agent에 전달한다'''

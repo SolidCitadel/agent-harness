@@ -36,3 +36,9 @@
 "추가 구성물" = '''- 샌드박스 밖 명령의 허용·질문·차단만 Codex `.rules`에 둔다.'''
 
 "하네스 검수 agent" = '''`harness_reviewer`'''
+
+"하네스 수정 계약" = '''`~/.codex/harness-revision.md`'''
+
+"이력 상속 위임" = '''부모 대화 이력을 상속하는 하위 agent를 생성한다. 하위 agent가 검수자를 직접 호출하려면 `~/.codex/config.toml`의 `[agents] max_depth`가 2 이상이어야 한다.'''
+
+"하위 agent 전달" = '''같은 하위 agent에 전달한다'''
