@@ -1,6 +1,6 @@
 interface:
   display_name: "Refine Harness"
-  short_description: "기존 하네스 구성물의 필요성과 문구·절차·구조를 함께 정제"
-  default_prompt: "Use $refine-harness to reassess this harness and refine its wording, workflows, and structure while preserving agreed requirements."
+  short_description: "기존 하네스 구성물에서 근거 없는 문장을 걷어내고 목표·제약 중심으로 조임"
+  default_prompt: "Use $refine-harness to reassess this harness and keep only what the model would not do by default without it (with recorded basis) and what the user specifically requires, and rewrite what remains as goals and constraints."
 policy:
   allow_implicit_invocation: false
