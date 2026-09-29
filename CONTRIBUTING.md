@@ -39,6 +39,19 @@ repo: clarify contribution scope
 - 보존할 요구: 표현·구조가 바뀌어도 유지하려는 사용자 요구와 제약
 - 검증과 한계: 실제 확인한 결과, 미확인 동작과 남은 불확실성
 
+하네스 파일(`shared/`, `claude/`, `codex/`, 루트 `AGENTS.md`·`CLAUDE.md`)을 바꾸는 커밋은 본문 끝 문단에 개정 출처 trailer를 둔다. 모델이 바뀌었을 때 특정 모델의 실패로 추가된 문장을 `git log --format='%(trailers:key=Failure-Model)'` 등으로 찾아 재평가하기 위해서다. `.githooks/commit-msg`가 검사하며 merge 커밋은 제외한다.
+
+```text
+Trigger: failure | request | refine
+Failure-Model: <모델 ID> (<하네스>) | unknown
+Revised-By: <모델 ID> (<하네스>) | human
+Reviewed-By: <모델 ID> (<하네스>) | none
+```
+
+- `Trigger`: 개정의 계기. 수행의 어긋남(`failure`), 실패 없는 추가·변경 요청(`request`), refine-harness 정제(`refine`).
+- `Failure-Model`: `Trigger`가 `failure`일 때만, 어긋남이 일어난 모델과 하네스. 확인할 수 없으면 `unknown`.
+- `Revised-By`·`Reviewed-By`: 개정안을 작성한 모델과 독립 검수자. 하네스는 `claude-code`, `codex`, `codex exec`처럼 실행 환경을 쓴다. 여럿이면 줄을 반복한다.
+
 본문은 최종 변경에 맞춰 작성한다. 항목별 고정 제목은 요구하지 않는다. 독립적으로 설명하고 되돌릴 수 있는 결정은 커밋을 나눈다. 과거 결정에 의존하거나 이를 변경할 때는 관련 커밋을 식별할 수 있게 참조한다.
 
 기록된 요구를 변경할 때는 필요한 사용자 합의를 다시 확인한다. 과거 기록은 현재 판단의 근거로 재평가한다.
