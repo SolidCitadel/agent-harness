@@ -11,7 +11,7 @@
 ## 검증
 
 - `.githooks/pre-commit`과 `.githooks/pre-merge-commit`이 스테이징된 트리에서 `scripts/check_repo.py`로 저장소 불변 조건을 검사해 위반한 커밋을 거부한다. 설치기가 `core.hooksPath`를 설정하기 전(미실행 또는 기존 git hook 보존으로 중단)에는 동작하지 않으므로 먼저 설치한다.
-- Linux 커밋 검사는 Windows 분기를 symbolic link로 모의해 실행할 뿐 실제 Windows 파일시스템 동작(junction 판정·생성, Windows 경로 형식, hard link 대체, 볼륨·파일 식별자)은 실행하지 않으므로, 이 동작에 영향을 주는 설치 코드를 Windows가 아닌 곳에서 바꾸면 Windows에서 `python scripts/install.py`를 실행해 확인한다.
+- Linux 커밋 검사는 Windows 분기를 symbolic link로 모의해 실행할 뿐 실제 Windows 파일시스템 동작(junction 판정·생성, Windows 경로 형식, 파일 symbolic link 권한, 이전 hard link 교체)은 실행하지 않으므로, 이 동작에 영향을 주는 설치 코드를 Windows가 아닌 곳에서 바꾸면 Windows에서 `python scripts/install.py`를 실행해 확인한다.
 - 플랫폼별 동작은 해당 플랫폼의 실제 파일·링크 상태로 판정한다.
 
 ## 커밋

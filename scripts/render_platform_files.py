@@ -188,7 +188,6 @@ def main() -> int:
                 parent.rmdir()
             continue
         target.parent.mkdir(parents=True, exist_ok=True)
-        # Truncate in place so Windows hard links to generated files stay attached.
         with target.open("wb") as handle:
             handle.write(outputs[Path(path)])
         target.chmod(modes[Path(path)])
