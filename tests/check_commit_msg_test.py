@@ -33,6 +33,10 @@ class ProblemsTest(unittest.TestCase):
         errors = check_commit_msg.problems(BODY + "Trigger: fix\nRevised-By: opus\n")
         self.assertEqual(len(errors), 3)
 
+    def test_fixup_follows_target_commit(self):
+        self.assertEqual(check_commit_msg.problems("fixup! shared: tighten refinement\n"), [])
+        self.assertEqual(len(check_commit_msg.problems("amend! shared: tighten refinement\n")), 3)
+
     def test_trailers_must_be_last_paragraph(self):
         message = "s: x\n\nTrigger: request\nRevised-By: human\nReviewed-By: none\n\nTrailing prose.\n"
         self.assertEqual(len(check_commit_msg.problems(message)), 3)

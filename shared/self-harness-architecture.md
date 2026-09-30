@@ -20,5 +20,6 @@
 | `shared/skills/modify-harness` | 요청받거나 필요를 판단한 하네스 구성물의 추가·변경·삭제를, 이 대화에서 이어갈 다른 작업이 있으면 하위 agent에 위임하고 없으면 주 에이전트가 수행 |
 | `shared/skills/integrate-context` | 새 맥락의 기록 필요성과 정본을 판단하고 지속적으로 반영 |
 | `shared/skills/refine-harness` | 기존 하네스 구성물의 규범과 구조를 사용자와 함께 정제 |
+| `shared/scripts/worktree.py` | 승인 전 하네스 개정안을 담는 worktree 브랜치의 생성, 기준 브랜치 병합과 정리 |
 | `shared/harness-review.md` | 호출자가 제공할 입력과 하네스 검수자의 범위·권한·출력 |
 | `codex/agents/harness-reviewer.toml`, `claude/agents/harness-reviewer.md` | 하네스 검수 역할의 플랫폼별 실행 설정과 공통 계약 연결 |

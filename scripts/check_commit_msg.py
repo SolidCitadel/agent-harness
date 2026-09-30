@@ -44,6 +44,9 @@ def trailers(message: str) -> dict[str, list[str]]:
 
 
 def problems(message: str) -> list[str]:
+    # fixup! 커밋은 worktree.py land가 대상 커밋에 합치므로 대상 커밋의 trailer를 따른다.
+    if message.startswith("fixup!"):
+        return []
     found = trailers(message)
     errors: list[str] = []
     trigger = found.get("trigger", [])
