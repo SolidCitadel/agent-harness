@@ -28,6 +28,7 @@ class InstallTest(unittest.TestCase):
         install.install_links(REPO, self.home)
         install.remove_renamed(REPO, self.home)
         install.remove_old_skills(REPO, self.home)
+        install.remove_retired_links(REPO, self.home)
         install.verify(REPO, self.home)
 
     def link(self, destination, source):
@@ -60,6 +61,16 @@ class InstallTest(unittest.TestCase):
         self.install()
         self.assertFalse(os.path.lexists(self.home / ".claude/meta-doc-critic.md"))
         self.assertFalse(os.path.lexists(self.home / ".agents/skills/self-improve"))
+
+    def test_retired_directory_link_is_removed_but_user_directory_kept(self):
+        path = self.home / ".claude/agents"
+        path.parent.mkdir(parents=True)
+        os.symlink(REPO / "claude/agents", path, target_is_directory=True)
+        self.install()
+        self.assertFalse(os.path.lexists(path))
+        path.mkdir()
+        self.install()
+        self.assertTrue(path.is_dir())
 
     def test_unmanaged_old_skill_directory_is_preserved(self):
         path = self.home / ".claude/skills/self-improve"

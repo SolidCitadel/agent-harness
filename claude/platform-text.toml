@@ -31,7 +31,7 @@
 
 "추가 구성물" = ''
 
-"하네스 검수 agent" = '''`harness-reviewer`'''
+"하네스 검수 agent" = '''Codex 검수자(`codex-exec` skill의 wrapper를 `--agent harness-reviewer`로, `--cwd`에 검수할 worktree를 주어 실행)'''
 
 "하네스 수정 계약" = '''`~/.claude/harness-revision.md`'''
 

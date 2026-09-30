@@ -48,7 +48,6 @@ LINKS = (
     Link("claude/commands/frontend-design.md", ".claude/commands/frontend-design.md"),
     Link("shared/vendor/anthropics/frontend-design/LICENSE.txt", ".claude/commands/frontend-design.LICENSE.txt"),
     Link("claude/rules", ".claude/rules"),
-    Link("claude/agents", ".claude/agents"),
     Link("claude/hooks", ".claude/hooks"),
     Link("codex/AGENTS.md", ".codex/AGENTS.md"),
     Link("shared/harness-authoring.md", ".codex/harness-authoring.md"),
@@ -85,6 +84,8 @@ REMOVED_SKILLS = tuple(
                         ("port-harness-change", ("shared/skills", "shared/skills")))
     for home, base in zip((".claude/skills", ".agents/skills"), bases)
 )
+# 원본 폴더가 없어진 디렉터리 링크. 관리 링크만 지우고, 같은 경로에 사용자가 만든 폴더는 그대로 쓴다.
+RETIRED_LINKS = ((".claude/agents", "claude/agents"),)
 # 예전 Windows hard link 대체가 설치 파일의 원본과 파일 식별자를 기록하던 상태 파일. 교체를 마치면 지운다.
 INSTALL_STATE = (".claude/agent-harness-install-state.json", ".codex/agent-harness-install-state.json")
 # 남아 있으면 안 되는 옛 경로.
@@ -301,6 +302,14 @@ def remove_old_skills(repo: Path, home: Path) -> None:
         say(f"이전 관리 skill 링크 제거: {destination}")
 
 
+def remove_retired_links(repo: Path, home: Path) -> None:
+    for destination_name, old in RETIRED_LINKS:
+        destination = home / destination_name
+        if links_directly_to(destination, repo / old):
+            remove_link(destination)
+            say(f"이전 관리 링크 제거: {destination}")
+
+
 def git(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True, encoding="utf-8")
 
@@ -375,6 +384,7 @@ def main(argv: list[str] | None = None) -> int:
             install_links(repo, home)
             remove_renamed(repo, home)
             remove_old_skills(repo, home)
+            remove_retired_links(repo, home)
         verify(repo, home)
     except (InstallError, OSError, ValueError, KeyError, TypeError) as error:
         print(str(error), file=sys.stderr)

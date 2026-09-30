@@ -22,4 +22,4 @@
 | `shared/skills/refine-harness` | 기존 하네스 구성물의 규범과 구조를 사용자와 함께 정제 |
 | `shared/scripts/worktree.py` | 승인 전 하네스 개정안을 담는 worktree 브랜치의 생성, 기준 브랜치 병합과 정리 |
 | `shared/harness-review.md` | 호출자가 제공할 입력과 하네스 검수자의 범위·권한·출력 |
-| `codex/agents/harness-reviewer.toml`, `claude/agents/harness-reviewer.md` | 하네스 검수 역할의 플랫폼별 실행 설정과 공통 계약 연결 |
+| `codex/agents/harness-reviewer.toml` | 하네스 검수 역할의 실행 설정과 공통 계약 연결. Claude Code는 `codex-exec` wrapper로 이 정의를 적용해 호출 |

@@ -1,6 +1,6 @@
 ---
 name: codex-exec
-description: 사용자가 조사·검토 같은 하위 작업을 Codex나 codex exec에 맡기라고 했을 때, Codex CLI(`codex exec`)를 읽기 전용으로 실행하고 그 결과를 받아 쓰는 방법을 정한다. 사용자가 `/codex:rescue`로 코드 작업을 넘기는 경우, Claude 하위 agent 위임, 다른 skill이 Codex 호출 절차를 따로 정해 둔 작업에는 쓰지 않는다.
+description: 사용자가 조사·검토 같은 하위 작업을 Codex나 codex exec에 맡기라고 했을 때와 하네스 개정안을 독립 검수받을 때, Codex CLI(`codex exec`)를 읽기 전용으로 실행하고 그 결과를 받아 쓰는 방법을 정한다. 사용자가 `/codex:rescue`로 코드 작업을 넘기는 경우, Claude 하위 agent 위임, 다른 skill이 Codex 호출 절차를 따로 정해 둔 작업에는 쓰지 않는다.
 ---
 
 # Codex exec 위임

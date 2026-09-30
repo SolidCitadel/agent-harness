@@ -13,4 +13,4 @@
 
 ## 하네스 개정 검수
 
-`~/.claude/harness-review.md`를 읽고 입력을 준비한 뒤, 작성 대화 이력을 상속하지 않는 새 `harness-reviewer`를 호출한다.
+`~/.claude/harness-review.md`를 읽고 입력을 준비한 뒤, 작성 대화 이력을 상속하지 않는 새 Codex 검수자(`codex-exec` skill의 wrapper를 `--agent harness-reviewer`로, `--cwd`에 검수할 worktree를 주어 실행)를 호출한다.
