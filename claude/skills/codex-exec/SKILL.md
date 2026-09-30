@@ -9,27 +9,30 @@ description: 사용자가 조사·검토 같은 하위 작업을 Codex나 codex 
 
 ## 실행
 
-지시문은 scratchpad의 Markdown 파일로 쓰고 stdin으로 넘긴다. Bash 도구로 다음 명령을 background로 실행하고 완료 알림을 기다린다.
+`scripts/codex_run.py`가 읽기 전용 실행과 작업 위치, 결과·로그 보존을 고정한다. 지시는 heredoc으로 표준 입력에 넘긴다. 실행은 흔히 Bash 도구의 foreground 제한 시간을 넘기므로 background로 실행해 완료 알림을 기다린다.
 
 ```bash
-codex [--search] exec --skip-git-repo-check -s read-only -C <작업 디렉터리> [-i <이미지>...] -o <결과.md> - < <지시.md> > <로그.txt> 2>&1
+python ~/.claude/skills/codex-exec/scripts/codex_run.py [--search] [--agent <이름>] [--cwd <경로>] [-i <이미지>]... [--model <모델>] [--effort <강도>] <<'EOF'
+<지시>
+EOF
 ```
 
-- `--search`: 웹 검색이 필요할 때 `exec` 앞에 둔다.
-- `-s read-only`: Codex가 작업 중 파일을 바꾸지 않게 한다.
-- `-C`: Codex가 읽어야 할 파일이 있는 디렉터리를 준다. 없으면 scratchpad를 준다.
-- `-i`: 이미지 입력. 값을 여러 개 받으므로 `-o` 앞에 둔다.
-- `-o`: Codex의 마지막 응답만 파일로 받는다. 진행 로그는 `<로그.txt>`로 분리한다.
-- 모델과 추론 강도는 `~/.codex/config.toml` 기본값을 쓰고, 사용자가 지정하면 `-m <모델>`, `-c model_reasoning_effort=<값>`으로 바꾼다.
+- `--cwd`: Codex가 읽을 파일이 있는 경로. 그 경로가 속한 git 저장소의 루트에서 실행되므로 Codex는 그 저장소의 `AGENTS.md`를 읽는다. 기본값은 현재 디렉터리다.
+- `--agent`: `~/.codex/agents/<이름>.toml`의 지시와 모델 설정을 적용한다. 예: `--agent harness-reviewer`.
+- `--search`: 웹 검색이 필요할 때 쓴다.
+- 모델: 범위가 명확한 조사·탐색·정리는 `--model luna`로, 검수·판단처럼 틀렸을 때 비용이 큰 작업은 `--model` 없이 기본 모델로 실행한다. 사용자가 지정하면 그 모델을 쓴다. 계열 이름은 그 계열의 최신 모델로 바뀐다.
+- 추론 강도는 사용자가 지정할 때만 `--effort`로 바꾼다.
 
-로그 머리의 `model:`과 `session id:` 줄에 실제 모델과 세션 ID가 있다. 산출물에 수행 도구를 기록해야 하면 이 모델명을 쓴다.
+지시에는 작업 고유의 입력만 쓴다. `AGENTS.md`와 agent 정의가 이미 주는 지침, 읽기 전용 권한은 다시 쓰지 않는다.
 
-실행이 실패하면 로그 끝의 오류(인증, 모델 거부, CLI 버전 등)를 사용자에게 보고하고, Claude가 다른 도구로 대신 수행할지는 사용자 결정을 받는다.
+결과는 표준 출력으로 받는다. 끝의 `session:` 줄은 세션 ID, `run:` 줄은 지시·로그·결과를 보존한 실행 폴더다. 산출물에 수행 도구를 기록해야 하면 실행 폴더 `log.txt`의 `model:` 줄을 쓴다. 실행이 실패하면 출력된 로그 끝의 오류(인증, 모델 거부, CLI 버전 등)를 사용자에게 보고하고, Claude가 다른 도구로 대신 수행할지는 사용자 결정을 받는다.
 
 ## 이어서 질문
 
-전역 지침에 따라 결과를 추가로 확인해야 하면 Claude 도구로 대신 조사하지 않고 같은 세션에 이어서 질문한다. 처음 실행한 `-C` 디렉터리에서 실행하고, `resume`은 `-s`를 받지 않고 처음 실행의 sandbox도 이어받지 않으므로 `-c sandbox_mode`로 읽기 전용을 다시 지정한다.
+전역 지침에 따라 결과를 추가로 확인해야 하면 Claude 도구로 대신 조사하지 않고 같은 세션에 이어서 질문한다. 작업 위치, agent, 실제 적용된 모델과 추론 강도는 처음 실행에서 이어받고, 이번 질문에 웹 검색이 필요하면 `--search`를 더한다.
 
 ```bash
-cd <처음 -C 디렉터리> && codex [--search] exec resume --skip-git-repo-check -c sandbox_mode='"read-only"' <session id> -o <결과2.md> - < <추가 지시.md> > <로그2.txt> 2>&1
+python ~/.claude/skills/codex-exec/scripts/codex_run.py resume [--search] <session id> <<'EOF'
+<추가 지시>
+EOF
 ```
