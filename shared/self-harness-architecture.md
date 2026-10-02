@@ -14,7 +14,7 @@
 | `shared/skill-authoring.md`, `shared/agent-authoring.md` | 해당 유형을 다룰 때 읽는 공통 전문 지식 |
 | `shared/harness-components.md` | 구성물 선택 기준과 플랫폼별 위치, 유형별 작성 규율 라우팅의 원본 |
 | `claude/rules/` | Claude Code에서 하네스 파일을 다룰 때 작성 규율을 자동으로 읽게 하는 연결 |
-| `claude/skills/self-diagnose`, `codex/skills/self-diagnose` | 수행 진단을 Claude Code에서는 주 에이전트가 직접, Codex에서는 대화 이력을 상속한 하위 agent에 위임해 수행하고, 보정 제안과 개정안을 사용자 승인에 연결 |
+| `claude/skills/self-diagnose`, `codex/skills/self-diagnose` | 수행 진단을 주 에이전트가 직접 수행하고, 보정 제안과 개정안을 사용자 승인에 연결 |
 | `shared/self-diagnosis.md` | 수행 진단의 절차와 반환 계약 |
 | `shared/harness-revision.md` | 하네스 구성물의 개정안 작성·검수·반환·승인 후 적용과 Codex의 이력 상속 하위 agent 위임 절차 |
 | `shared/skills/modify-harness` | 요청받거나 필요를 판단한 하네스 구성물의 추가·변경·삭제를 주 에이전트가 수행하고, Codex에서는 사용자가 지시·승인하면 하위 agent에 위임 |
